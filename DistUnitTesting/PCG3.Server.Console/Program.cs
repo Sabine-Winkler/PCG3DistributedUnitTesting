@@ -12,14 +12,27 @@ namespace PCG3.Server {
 
     public static void Main(string[] args) {
 
-      int cores = 4; //standard
-      if (args.Length > 0) {
-        cores = Int32.Parse(args[0]);
+      int cores = 4, port = 9000;
+      #region parametercheck
+      if (args.Length > 0) { }
+      try {
+        cores = int.Parse(args[0]);
       }
-   
+      catch (Exception) {
+        cores = 4;
+      }
+      if (args.Length > 1) {
+        try {
+          port = int.Parse(args[0]);
+        }
+        catch (Exception) {
+          port = 9000;
+        }
+      }
+      #endregion
 
       Console.WriteLine("Xco Application Space - Distributed Workers Server");
-      using (var space = new XcoAppSpace("tcp.port=9000")) {
+      using (var space = new XcoAppSpace($"tcp.port={port}")) {
         //run worker in server space
         space.RunWorker<AssemblyWorker, ServerAssemblyWorker>();
         //space.RunWorker<TestWorker, ServerTestWorker>();
@@ -30,5 +43,8 @@ namespace PCG3.Server {
 
 
     }
+
+
+
   }
 }
