@@ -33,7 +33,10 @@
                   Padding="10, 5, 10, 5" Margin="0, 0, 0, 10"
                   HorizontalAlignment="Center"
                   Command="{Binding Path=SelectAssemblyCommand}" />
-          <TextBlock Text="{Binding Path=SelectedAssemblyPath}" HorizontalAlignment="Center"
+          <Button Content="Deploy Unittest Assembly"
+                  Padding="10, 5, 10, 5" Margin="0, 0, 0, 10"
+                  HorizontalAlignment="Center" Click="SelectAssemblyButton_Click" />
+                <TextBlock Text="{Binding Path=SelectedAssemblyPath}" HorizontalAlignment="Center"
                      TextWrapping="Wrap" />
         </StackPanel>
       </Grid>

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using XcoAppSpaces.Core;
 using System.Reflection;
 
-namespace PCG3.Server.Console {
+namespace PCG3.Server {
   class ServerAssemblyWorker : AssemblyWorker {
 
 
@@ -32,10 +32,19 @@ namespace PCG3.Server.Console {
 
   public class ServerTestWorker : TestWorker {
 
+    public int Cores { get; set; }
+
+    public ServerTestWorker(int Cores) {
+      this.Cores = Cores;
+    }
+
     [XcoConcurrent]
     public void Process(TestRequest test) {
       var response = new TestResponse();
 
+      
+      //Tasks (nicht Threads)
+      //waitany
       
 
       //response.result = Testresult;

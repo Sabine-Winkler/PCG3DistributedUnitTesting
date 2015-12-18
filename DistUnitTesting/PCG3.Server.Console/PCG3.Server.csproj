@@ -7,8 +7,8 @@
     <ProjectGuid>{8181ED81-96A9-4111-BA68-1ECF5DA70E04}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PCG3.Server.Console</RootNamespace>
-    <AssemblyName>PCG3.Server.Console</AssemblyName>
+    <RootNamespace>PCG3.Server</RootNamespace>
+    <AssemblyName>PCG3.Server</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -51,7 +51,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ServerContract.cs" />
+    <Compile Include="ServerWorker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -61,6 +61,10 @@
     <ProjectReference Include="..\PCG3.Middleware\PCG3.Middleware.csproj">
       <Project>{211b61ae-06c2-4eb0-a10e-32db096f4af1}</Project>
       <Name>PCG3.Middleware</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PCG3.TestFramework\PCG3.TestFramework.csproj">
+      <Project>{2d40d432-e19c-4dde-ab56-be35574f4fef}</Project>
+      <Name>PCG3.TestFramework</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -34,6 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\XcoAppSpace.1.5.0\lib\net35\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -47,6 +51,10 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="XcoAppSpaces, Version=1.5.0.0, Culture=neutral, PublicKeyToken=f6cee1eb78b6e622, processorArchitecture=MSIL">
+      <HintPath>..\packages\XcoAppSpace.1.5.0\lib\net35\XcoAppSpaces.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -84,6 +92,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -97,6 +106,10 @@
     <ProjectReference Include="..\PCG3.Client.ViewModel\PCG3.Client.ViewModel.csproj">
       <Project>{cac03412-9666-457b-a44d-b6be64d7ea9c}</Project>
       <Name>PCG3.Client.ViewModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\PCG3.Middleware\PCG3.Middleware.csproj">
+      <Project>{211b61ae-06c2-4eb0-a10e-32db096f4af1}</Project>
+      <Name>PCG3.Middleware</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
