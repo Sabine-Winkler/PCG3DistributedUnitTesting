@@ -29,14 +29,18 @@
 
         <StackPanel Grid.Column="1"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
-          <Button Content="Select Unittest Assembly"
-                  Padding="10, 5, 10, 5" Margin="0, 0, 0, 10"
-                  HorizontalAlignment="Center"
-                  Command="{Binding Path=SelectAssemblyCommand}" />
-          <Button Content="Deploy Unittest Assembly"
-                  Padding="10, 5, 10, 5" Margin="0, 0, 0, 10"
-                  HorizontalAlignment="Center" Click="SelectAssemblyButton_Click" />
-                <TextBlock Text="{Binding Path=SelectedAssemblyPath}" HorizontalAlignment="Center"
+          <StackPanel Orientation="Horizontal" >
+            <Button Content="Select Unittest Assembly"
+                    Padding="10, 5, 10, 5" Margin="5"
+                    HorizontalAlignment="Center"
+                    Command="{Binding Path=SelectAssemblyCommand}" />
+            <Button Content="Deploy Unittest Assembly to servers"
+                    Padding="10, 5, 10, 5" Margin="5"
+                    HorizontalAlignment="Center"
+                    Command="{Binding Path=DeployAssemblyToServersCommand}" />
+          </StackPanel>
+          
+          <TextBlock Text="{Binding Path=SelectedAssemblyPath}" HorizontalAlignment="Center"
                      TextWrapping="Wrap" />
         </StackPanel>
       </Grid>
