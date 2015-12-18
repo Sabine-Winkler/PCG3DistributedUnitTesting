@@ -29,6 +29,20 @@ namespace PCG3.TestFramework {
       return null;
     }
 
+    public void RunTest(TestResult result) {
+      object testClass = result.Type.Assembly.CreateInstance(result.Type.FullName);
+
+      object[] attributes = result.MethodInfo.GetCustomAttributes(false);
+      ExpectedExceptionAttribute expectedExceptionAttribute
+            = FindAttribute<ExpectedExceptionAttribute>(attributes);
+      TestAttribute testAttribute
+            = FindAttribute<TestAttribute>(attributes);
+
+      if (testAttribute != null) {
+        RunTest(result, testClass, expectedExceptionAttribute);
+      }
+    }
+
     public void RunTest(TestResult result, object testClass,
                         ExpectedExceptionAttribute expectedExceptionAttribute) {
 
