@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("PCG3.TestUnitTests")]
+[assembly: AssemblyTitle("PCG3.TestFramework")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("PCG3.TestUnitTests")]
+[assembly: AssemblyProduct("PCG3.TestFramework")]
 [assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("e5926c07-742f-44db-89e2-5ba8f28047f0")]
+[assembly: Guid("278b649d-8b1f-48e0-914b-f44d1ee7384e")]
 
 // Version information for an assembly consists of the following four values:
 //

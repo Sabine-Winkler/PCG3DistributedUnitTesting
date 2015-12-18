@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{911C45FB-9108-4E58-B77F-676E001ACA5E}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{2D40D432-E19C-4DDE-AB56-BE35574F4FEF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PCG3.TestUnitTests</RootNamespace>
-    <AssemblyName>PCG3.TestUnitTests</AssemblyName>
+    <RootNamespace>PCG3.TestFramework</RootNamespace>
+    <AssemblyName>PCG3.TestFramework</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -29,6 +29,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -39,14 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestUnitTests.cs" />
+    <Compile Include="Assert.cs" />
+    <Compile Include="AssertFailedException.cs" />
+    <Compile Include="Attributes.cs" />
+    <Compile Include="ExpectedExceptionNotThrownException.cs" />
+    <Compile Include="NoExceptionThrownException.cs" />
+    <Compile Include="TestResult.cs" />
+    <Compile Include="TestResults.cs" />
+    <Compile Include="TestRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PCG3.TestFramework\PCG3.TestFramework.csproj">
-      <Project>{2d40d432-e19c-4dde-ab56-be35574f4fef}</Project>
-      <Name>PCG3.TestFramework</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
