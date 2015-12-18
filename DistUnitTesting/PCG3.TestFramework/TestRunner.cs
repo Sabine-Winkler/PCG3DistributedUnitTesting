@@ -14,21 +14,86 @@ namespace PCG3.TestFramework {
     }
 
     /// <summary>
-    /// Checks if the array of attributes contains the attribute ExpectedException.
+    /// Checks if the array of attributes contains an attribute of type T.
     /// </summary>
     /// <param name="attributes">attributes of a method</param>
-    /// <returns>ExpectedExceptionAttribute if ExpectedException was found, otherwise null</returns>
-    public ExpectedExceptionAttribute FindExpectedExceptionAttribute(object[] attributes) {
+    /// <returns>attribute of type T or null, if not found</returns>
+    public T FindAttribute<T>(object[] attributes) where T : Attribute {
       
-      ExpectedExceptionAttribute expExcAttr = null;
-
       foreach (Attribute attribute in attributes) {
-        if (attribute is ExpectedExceptionAttribute) {
-          expExcAttr = (ExpectedExceptionAttribute)attribute;
+        if (attribute is T) {
+          return (T)attribute;
         }
       }
 
-      return expExcAttr;
+      return null;
+    }
+
+    public void RunTest(TestResult result, object testClass,
+                        ExpectedExceptionAttribute expectedExceptionAttribute) {
+
+      Stopwatch watch = new Stopwatch();
+
+      try {
+        watch.Start();
+        result.MethodInfo.Invoke(testClass, Type.EmptyTypes);
+        watch.Stop();
+
+        if (expectedExceptionAttribute != null) {
+          // an exception was expected, but not thrown
+          // -> test failed
+          result.Exception = new NoExceptionThrownException(expectedExceptionAttribute.Type);
+          result.Failed = true;
+          result.Status = TestStatus.FAILED;
+        } else {
+          // everything is ok
+          // -> test passed
+          result.Failed = false;
+          result.Status = TestStatus.PASSED;
+        }
+      } catch (Exception e) {
+
+        watch.Stop();
+
+        Exception resultException;
+        if (e.InnerException != null) {
+          resultException = e.InnerException;
+        } else {
+          resultException = e;
+        }
+
+        if (expectedExceptionAttribute != null) {
+
+          Type actualExceptionType = resultException.GetType();
+          Type expectedExceptionType = expectedExceptionAttribute.Type;
+
+          if (actualExceptionType == expectedExceptionType) {
+
+            // ExceptedException was thrown
+            // -> test passed
+            result.Failed = false;
+            result.Status = TestStatus.PASSED;
+          } else {
+
+            // another exception than the expected one was thrown
+            // -> test failed
+            result.Exception = new ExpectedExceptionNotThrownException(
+              expectedExceptionType, resultException);
+            result.Failed = true;
+            result.Status = TestStatus.FAILED;
+          }
+        } else {
+
+          // an unexpected exception or AssertionFailedException was thrown
+          // -> test failed
+          result.Exception = resultException;
+          result.Failed = true;
+          result.Status = TestStatus.FAILED;
+        }
+
+      } finally {
+        result.ElapsedTime = watch.Elapsed;
+      }
     }
 
     /// <summary>
@@ -47,76 +112,20 @@ namespace PCG3.TestFramework {
         foreach (MethodInfo method in type.GetMethods()) {
 
           object[] attributes = method.GetCustomAttributes(false);
-          ExpectedExceptionAttribute expExcAttr
-            = FindExpectedExceptionAttribute(attributes);
+          ExpectedExceptionAttribute expectedExceptionAttribute
+            = FindAttribute<ExpectedExceptionAttribute>(attributes);
+          TestAttribute testAttribute
+            = FindAttribute<TestAttribute>(attributes);
 
-          foreach (Attribute attribute in attributes) {
+          if (testAttribute != null) {
+            TestResult result = new TestResult();
 
-            if (attribute is TestAttribute) {
+            result.MethodInfo = method;
+            result.Type = type;
+            result.Status = TestStatus.WAITING;
 
-              Stopwatch watch = new Stopwatch();
-              TestResult result = new TestResult();
-
-              try {
-                watch.Start();
-                method.Invoke(testClass, Type.EmptyTypes);
-                watch.Stop();
-
-                if (expExcAttr != null) {
-                  // an exception was expected, but not thrown
-                  // -> test failed
-                  result.Exception = new NoExceptionThrownException(expExcAttr.Type);
-                  result.Failed = true;
-                } else {
-                  // everything is ok
-                  // -> test passed
-                  result.Failed = false;
-                }
-              } catch (Exception e) {
-                
-                watch.Stop();
-
-                Exception resultException;
-                if (e.InnerException != null) {
-                  resultException = e.InnerException;
-                } else {
-                  resultException = e;
-                }
-                
-                if (expExcAttr != null) {
-
-                  Type actualExceptionType = resultException.GetType();
-                  Type expectedExceptionType = expExcAttr.Type;
-
-                  if (actualExceptionType == expectedExceptionType) {
-
-                    // ExceptedException was thrown
-                    // -> test passed
-                    result.Failed = false;
-                  } else {
-
-                    // another exception than the expected one was thrown
-                    // -> test failed
-                    result.Exception = new ExpectedExceptionNotThrownException(
-                      expectedExceptionType, resultException);
-                    result.Failed = true;
-                  }
-                } else {
-
-                  // an unexpected exception or AssertionFailedException was thrown
-                  // -> test failed
-                  result.Exception = resultException;
-                  result.Failed = true;
-                }
-
-              } finally {
-                result.MethodInfo  = method;
-                result.Type        = type;
-                result.ElapsedTime = watch.Elapsed;
-
-                results.Add(result);
-              }
-            }
+            RunTest(result, testClass, expectedExceptionAttribute);
+            results.Add(result);
           }
         }
       }

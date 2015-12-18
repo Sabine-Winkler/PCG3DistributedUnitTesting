@@ -1,17 +1,16 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using PCG3.TestFramework;
 using System;
 
-namespace PCG3.VisualStudioUnitTests {
-  
-  [TestClass]
-  public class VisualStudioUnitTests {
+namespace PCG3.TestUnitTests {
+
+  public class TestUnitTests2 {
 
     /// <summary>
     /// Adds two numbers and compares the actual result with the expected one.
     /// Test passes.
     /// </summary>
-    [TestMethod]
-    public void AddTest() {
+    [Test]
+    public void AddTest2() {
       int expected = 3;
       int actual   = 1 + 2;
       Assert.AreEqual(expected, actual);
@@ -21,8 +20,8 @@ namespace PCG3.VisualStudioUnitTests {
     /// Adds two numbers and compares the actual result with the expected one.
     /// Test fails.
     /// </summary>
-    [TestMethod]
-    public void AddFailingTest() {
+    [Test]
+    public void AddFailingTest2() {
       int expected = 4;
       int actual   = 1 + 2;
       Assert.AreEqual(expected, actual);
@@ -32,9 +31,9 @@ namespace PCG3.VisualStudioUnitTests {
     /// The expected exception DivideByZeroException is thrown.
     /// Test passes.
     /// </summary>
-    [TestMethod]
+    [Test]
     [ExpectedException(typeof(DivideByZeroException))]
-    public void DivideByZeroTest() {
+    public void DivideByZeroTest2() {
       int zero   = 1 - 1;
       int result = 3 / zero;
     }
@@ -43,9 +42,9 @@ namespace PCG3.VisualStudioUnitTests {
     /// A DivideByZeroException is thrown instead of a IndexOutOfRangeException.
     /// Test fails.
     /// </summary>
-    [TestMethod]
+    [Test]
     [ExpectedException(typeof(IndexOutOfRangeException))]
-    public void AnotherExceptionThrownTest() {
+    public void AnotherExceptionThrownTest2() {
       int zero = 1 - 1;
       int result = 3 / zero; // throws a DivideByZeroException
     }
@@ -54,16 +53,16 @@ namespace PCG3.VisualStudioUnitTests {
     /// A DivideByZeroException is expected, but no exception is thrown.
     /// Test fails.
     /// </summary>
-    [TestMethod]
+    [Test]
     [ExpectedException(typeof(DivideByZeroException))]
-    public void NoExceptionThrownTest() {
+    public void NoExceptionThrownTest2() {
       int result = 10 / 5;
     }
 
     /// <summary>
     /// This method is not intended to be executed by a test runner.
     /// </summary>
-    public void ThisTestIsNotExecutedTest() {
+    public void ThisTestIsNotExecutedTest2() {
       // nothing to do here
     }
   }

@@ -3,6 +3,45 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Distributed Unittesting" Height="350" Width="525">
     <Grid>
-        
-    </Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="4*"/>
+        <RowDefinition Height="5*"/>
+        <RowDefinition Height="1*"/>
+      </Grid.RowDefinitions>
+
+      <Grid Grid.Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="5*"/>
+          <ColumnDefinition Width="5*"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0">
+          <TextBlock Text="Tests:" />
+          <ListBox HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
+            <ListBoxItem Content="A"/>
+          </ListBox>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1">
+        </StackPanel>
+      </Grid>
+
+      <!-- test results -->
+      <StackPanel Grid.Row="1">
+        <TextBlock Text="Tests:" />
+        <DataGrid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+                  Name="dataGridTestResults">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Class"  Binding="{Binding Path=testClass}"  Width="10*"/>
+            <DataGridTextColumn Header="Method" Binding="{Binding Path=testMethod}" Width="10*" />
+            <DataGridTextColumn Header="Status" Binding="{Binding Path=testStatus}" Width="10*" />
+            <DataGridTextColumn Header="ElapsedTime" Binding="{Binding Path=testElapsedTime}" Width="15*" />
+            <DataGridTextColumn Header="Result" Binding="{Binding Path=testResult}" Width="55*" />
+          </DataGrid.Columns>
+      </DataGrid>
+    </StackPanel>
+
+    <Button Grid.Row="2" Content="Start" HorizontalAlignment="Center"
+            Command="{Binding Path=xyz.xyzCommand}" />
+  </Grid>
 </Window>
