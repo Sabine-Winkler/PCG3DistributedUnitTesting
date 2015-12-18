@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using PCG3.Client.ViewModel.ViewModel;
+using System.Windows;
 
 namespace PCG3.Client.GUI {
   
@@ -6,6 +7,7 @@ namespace PCG3.Client.GUI {
 
     public MainWindow() {
       InitializeComponent();
+      DataContext = new MainVM();
     }
   }
 }
