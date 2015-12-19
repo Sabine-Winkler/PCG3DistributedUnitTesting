@@ -34,11 +34,13 @@ namespace PCG3.Server {
 
       Console.WriteLine("Xco Application Space - Distributed Unittesting Server");
       using (var space = new XcoAppSpace(string.Format("tcp.port={0}", port))) {
+        Console.WriteLine("Number of cores: {0}", cores);
         //run worker in server space
         space.RunWorker<TestWorker, ServerTestWorker>();
         Console.WriteLine(string.Format("TestWorker on {0}:     running...", port));
         space.RunWorker<AssemblyWorker, ServerAssemblyWorker>();
         Console.WriteLine(string.Format("AssemblyWorker on {0}: running...", port));
+        
 
         Console.ReadLine();
       }
