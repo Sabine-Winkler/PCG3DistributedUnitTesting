@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using PCG3.Middleware;
+using System;
 using XcoAppSpaces.Core;
-using PCG3.Middleware;
 
 namespace PCG3.Server {
 
@@ -35,7 +31,7 @@ namespace PCG3.Server {
 
 
       Console.WriteLine("Xco Application Space - Distributed Workers Server");
-      using (var space = new XcoAppSpace($"tcp.port={port}")) {
+      using (var space = new XcoAppSpace("tcp.port="+port)) {
         //run worker in server space
         space.RunWorker<AssemblyWorker, ServerAssemblyWorker>();
         //space.RunWorker<TestWorker, ServerTestWorker>();

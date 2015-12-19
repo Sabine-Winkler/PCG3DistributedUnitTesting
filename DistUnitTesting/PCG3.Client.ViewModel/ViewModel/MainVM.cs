@@ -16,13 +16,16 @@ namespace PCG3.Client.ViewModel.ViewModel {
     }
 
     public string SelectedAssemblyPath {
+      
       get { return selectedAssemblyPath; }
+      
       set {
         if (selectedAssemblyPath != value) {
           selectedAssemblyPath = value;
           RaisePropertyChangedEvent(vm => vm.selectedAssemblyPath);
         }
       }
+
     }
 
     private ICommand selectAssemblyCommand;
@@ -32,7 +35,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
         if (selectAssemblyCommand == null) {
           selectAssemblyCommand = new RelayCommand(param => {
 
-            string filter = "Executable (*.exe)|*.exe|DLL (*.dll)|*.dll";
+            string filter = "DLL (*.dll)|*.dll|Executable (*.exe)|*.exe";
 
             OpenFileDialog openFileDialog
               = new OpenFileDialog() { Filter = filter, Multiselect = false };
@@ -43,7 +46,6 @@ namespace PCG3.Client.ViewModel.ViewModel {
             }
           });
         }
-
         return selectAssemblyCommand;
       }
 
@@ -65,7 +67,6 @@ namespace PCG3.Client.ViewModel.ViewModel {
             }
           });
         }
-
         return deployAssemblyToServersCommand;
       }
 
@@ -81,7 +82,6 @@ namespace PCG3.Client.ViewModel.ViewModel {
             Console.WriteLine("Start called.");
           });
         }
-
         return startTestsCommand;
       }
 
