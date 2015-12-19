@@ -1,7 +1,6 @@
 ﻿using Microsoft.Win32;
 using PCG3.Client.Logic;
 using System;
-using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace PCG3.Client.ViewModel.ViewModel {
@@ -9,6 +8,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
   public class MainVM : ViewModelBase<MainVM> {
 
     private string selectedAssemblyPath;
+    private string serverAddresses;
     private ClientLogic logic;
 
     public MainVM() {
@@ -27,6 +27,34 @@ namespace PCG3.Client.ViewModel.ViewModel {
       }
 
     }
+
+    public string ServerAddresses {
+
+      get { return serverAddresses; }
+
+      set {
+        if (serverAddresses != value) {
+          serverAddresses = value;
+          ServerAddressesArray = GetServerAddresses(serverAddresses);
+          RaisePropertyChangedEvent(vm => vm.serverAddresses);
+        }
+      }
+    }
+
+    /// <summary>
+    /// Splits a list of server addresses at every newline, removes empty entries,
+    /// and returns the server addresses as array.
+    /// </summary>
+    /// <param name="serverAddresses">list of server addresses concatenated by newlines</param>
+    /// <returns>array of server addresses, or an empty array if there are no server addresses</returns>
+    private string[] GetServerAddresses(string serverAddresses) {
+      return serverAddresses.Split(
+                new string[] { Environment.NewLine },
+                StringSplitOptions.RemoveEmptyEntries
+             );
+    }
+
+    public string[] ServerAddressesArray { get; private set; }
 
     private ICommand selectAssemblyCommand;
     public ICommand SelectAssemblyCommand {
@@ -57,12 +85,8 @@ namespace PCG3.Client.ViewModel.ViewModel {
       get {
         if (deployAssemblyToServersCommand == null) {
           deployAssemblyToServersCommand = new RelayCommand(param => {
-            
-            // TODO: fetch from GUI
-            List<string> serverAddresses
-              = new List<string>() { "localhost:9000" };
 
-            foreach (string serverAddress in serverAddresses) {
+            foreach (string serverAddress in ServerAddressesArray) {
               logic.DeployAssemblyToServer(SelectedAssemblyPath, serverAddress);
             }
           });
