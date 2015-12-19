@@ -20,8 +20,14 @@ namespace PCG3.Client.ViewModel.ViewModel {
 
     public MainVM(string assembly, string serverAddresses) {
       logic = new ClientLogic();
-      SelectedAssemblyPath = assembly;
-      ServerAddresses = serverAddresses;
+
+      if (assembly != "") {
+        SelectedAssemblyPath = assembly;
+      }
+
+      if (serverAddresses != "") {
+        ServerAddresses = serverAddresses;
+      }
     }
 
     public string SelectedAssemblyPath {
