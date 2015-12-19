@@ -19,7 +19,7 @@ namespace PCG3.Server {
       try {
         Assembly.Load(assembly.Bytes);
         response.Worked = true;
-        Console.WriteLine(assembly.Bytes);
+        Console.WriteLine("Assembly got load on Server.");
       }
       catch (Exception e) {
         response.Worked = false;
@@ -48,40 +48,31 @@ namespace PCG3.Server {
     //}
 
     [XcoConcurrent]
-    public void Process(TestRequest test) {
-      var response = new TestResponse();
+    public void Process(TestRequest testRequest) {
+      TestResponse response = new TestResponse();
 
       TestRunner tr = new TestRunner();
-      
-      string assemblyName = @"F:\\MSc\\3_PCG\\UET2\\PCG3.TestUnitTests.dll";
-      Assembly assembly = Assembly.LoadFrom(assemblyName);
-      TestResults results = tr.RunTests(assembly);
-      Console.WriteLine(results);
 
-     
-      
+      response.Result =
+         tr.RunTest(testRequest.Test);
 
-     // //Test ausführen
-     // for (int i = 1; i<= Cores; i++) {
-     //   Tasks.Add
-     // }
 
-     // //Tasks (nicht Threads)
-     // //waitany
-     //// for 
-     // Task t = Task.Run( () => {
-     //   // Just loop.
-     //   int ctr = 0;
-     //   for (ctr = 0; ctr <= 1000000; ctr++)
-     //                             {}
-     //   Console.WriteLine("Finished {0} loop iterations",
-     //                                               ctr);
-     // } );
-     // t.Wait();
+      // //Tasks (nicht Threads)
+      // //waitany
+      //// for 
+      // Task t = Task.Run( () => {
+      //   // Just loop.
+      //   int ctr = 0;
+      //   for (ctr = 0; ctr <= 1000000; ctr++)
+      //                             {}
+      //   Console.WriteLine("Finished {0} loop iterations",
+      //                                               ctr);
+      // } );
+      // t.Wait();
 
 
       //response.result = Testresult;
-      test.ResponsePort.Post(response);
+      testRequest.ResponsePort.Post(response);
     }
   }
 }

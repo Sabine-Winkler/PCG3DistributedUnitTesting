@@ -29,7 +29,7 @@ namespace PCG3.TestFramework {
       return null;
     }
 
-    public void RunTest(TestResult result) {
+    public TestResult RunTest(TestResult result) {
       object testClass = result.Type.Assembly.CreateInstance(result.Type.FullName);
 
       object[] attributes = result.MethodInfo.GetCustomAttributes(false);
@@ -39,11 +39,12 @@ namespace PCG3.TestFramework {
             = FindAttribute<TestAttribute>(attributes);
 
       if (testAttribute != null) {
-        RunTest(result, testClass, expectedExceptionAttribute);
+        return RunTest(result, testClass, expectedExceptionAttribute);
       }
+      return null;
     }
 
-    public void RunTest(TestResult result, object testClass,
+    public TestResult RunTest(TestResult result, object testClass,
                         ExpectedExceptionAttribute expectedExceptionAttribute) {
 
       Stopwatch watch = new Stopwatch();
@@ -108,6 +109,7 @@ namespace PCG3.TestFramework {
       } finally {
         result.ElapsedTime = watch.Elapsed;
       }
+      return result;
     }
 
     /// <summary>

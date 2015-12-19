@@ -38,17 +38,23 @@ namespace PCG3.Client.Logic {
       serverWorker.Post(deployAssemblyRequest);
     }
 
-    public void SendTestsToServer(string assemblyPath, string serverAddress) {
+    public void SendTestsToServer(TestResults tests, string[] serverAddresses) {
 
-      List<TestResult> list = AssemblyToList(assemblyPath);
 
+      //Test first test
+      TestResult test = tests[0];
+      string serverAddress = serverAddresses[0];
       TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress);
       TestRequest request = new TestRequest();
-      request.Test = list[0];
-      //TODO
-      
+      request.Test = test;
+
+      //Parallel here
+
+
+
+
       request.ResponsePort = space.Receive<TestResponse>(resp => {
-        //TODO
+        Console.WriteLine(resp.Result);
       });
 
 

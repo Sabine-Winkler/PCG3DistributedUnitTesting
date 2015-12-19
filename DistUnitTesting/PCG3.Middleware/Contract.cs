@@ -10,7 +10,6 @@ using PCG3.TestFramework;
 namespace PCG3.Middleware {
 
 
-  //general
   public class AssemblyWorker : Port<AssemblyRequest> {
 
   }
