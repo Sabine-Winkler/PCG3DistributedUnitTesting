@@ -27,22 +27,17 @@
 
           <TextBlock Grid.Row="0" Text="Servers:" />
           <TextBox Grid.Row="1"
-                   Text="{Binding Path=ServerAddresses}"
+                   Text="{Binding Path=ServerAddresses, UpdateSourceTrigger=PropertyChanged}"
                    TextWrapping="Wrap" AcceptsReturn="True"/>
         </Grid>
 
         <StackPanel Grid.Column="1"
                     HorizontalAlignment="Center" VerticalAlignment="Center">
-          <StackPanel Orientation="Horizontal" >
-            <Button Content="Select Unittest Assembly"
-                    Padding="10, 5" Margin="5"
-                    HorizontalAlignment="Center"
-                    Command="{Binding Path=SelectAssemblyCommand}" />
-            <Button Content="Deploy Unittest Assembly to servers"
-                    Padding="10, 5" Margin="5"
-                    HorizontalAlignment="Center"
-                    Command="{Binding Path=DeployAssemblyToServersCommand}" />
-          </StackPanel>
+          
+          <Button Content="Select Unittest Assembly"
+                  Padding="10, 5" Margin="5"
+                  HorizontalAlignment="Center"
+                  Command="{Binding Path=SelectAssemblyCommand}" />
           
           <TextBlock Text="{Binding Path=SelectedAssemblyPath}"
                      HorizontalAlignment="Center"
@@ -76,7 +71,8 @@
       <Button Grid.Row="2" Padding="20, 0"
               Content="Start"
               HorizontalAlignment="Center"
-              Command="{Binding Path=StartTestsCommand}" />
+              Command="{Binding Path=StartTestsCommand}"
+              IsEnabled="{Binding Path=ValidServersAndAssembly}" />
   
   </Grid>
 

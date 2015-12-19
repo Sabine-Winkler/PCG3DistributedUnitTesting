@@ -9,6 +9,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
 
     private string selectedAssemblyPath;
     private string serverAddresses;
+    private bool validServerAddresses;
+    private bool validAssemblyPath;
+    private bool validServersAndAssembly; // for 'Start' button
     private ClientLogic logic;
 
     public MainVM() {
@@ -35,7 +38,8 @@ namespace PCG3.Client.ViewModel.ViewModel {
       set {
         if (serverAddresses != value) {
           serverAddresses = value;
-          ServerAddressesArray = GetServerAddresses(serverAddresses);
+          ServerAddressesArray = SplitServerAddresses(serverAddresses);
+          ValidServerAddresses = (serverAddresses != null && serverAddresses.Length > 0);
           RaisePropertyChangedEvent(vm => vm.serverAddresses);
         }
       }
@@ -47,7 +51,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
     /// </summary>
     /// <param name="serverAddresses">list of server addresses concatenated by newlines</param>
     /// <returns>array of server addresses, or an empty array if there are no server addresses</returns>
-    private string[] GetServerAddresses(string serverAddresses) {
+    private string[] SplitServerAddresses(string serverAddresses) {
       return serverAddresses.Split(
                 new string[] { Environment.NewLine },
                 StringSplitOptions.RemoveEmptyEntries
@@ -55,6 +59,41 @@ namespace PCG3.Client.ViewModel.ViewModel {
     }
 
     public string[] ServerAddressesArray { get; private set; }
+
+    public bool ValidServerAddresses {
+      get { return validServerAddresses; }
+
+      set {
+        if (validServerAddresses != value) {
+          validServerAddresses = value;
+          ValidServersAndAssembly = ValidServerAddresses && ValidAssemblyPath;
+          RaisePropertyChangedEvent(vm => vm.validServerAddresses);
+        }
+      }
+    }
+    
+    public bool ValidAssemblyPath {
+      get { return validAssemblyPath; }
+
+      set {
+        if (validAssemblyPath != value) {
+          validAssemblyPath = value;
+          ValidServersAndAssembly = ValidServerAddresses && ValidAssemblyPath;
+          RaisePropertyChangedEvent(vm => vm.validAssemblyPath);
+        }
+      }
+    }
+
+    public bool ValidServersAndAssembly {
+      get { return validServersAndAssembly; }
+
+      set {
+        if (validServersAndAssembly != value) {
+          validServersAndAssembly = value;
+          RaisePropertyChangedEvent(vm => vm.validServersAndAssembly);
+        }
+      }
+    }
 
     private ICommand selectAssemblyCommand;
     public ICommand SelectAssemblyCommand {
@@ -71,27 +110,11 @@ namespace PCG3.Client.ViewModel.ViewModel {
             bool? result = openFileDialog.ShowDialog();
             if (result == true) {
               SelectedAssemblyPath = openFileDialog.FileName;
+              ValidAssemblyPath = (SelectedAssemblyPath != null && SelectedAssemblyPath != "");
             }
           });
         }
         return selectAssemblyCommand;
-      }
-
-    }
-
-    private ICommand deployAssemblyToServersCommand;
-    public ICommand DeployAssemblyToServersCommand {
-
-      get {
-        if (deployAssemblyToServersCommand == null) {
-          deployAssemblyToServersCommand = new RelayCommand(param => {
-
-            foreach (string serverAddress in ServerAddressesArray) {
-              logic.DeployAssemblyToServer(SelectedAssemblyPath, serverAddress);
-            }
-          });
-        }
-        return deployAssemblyToServersCommand;
       }
 
     }
@@ -102,8 +125,14 @@ namespace PCG3.Client.ViewModel.ViewModel {
       get {
         if (startTestsCommand == null) {
           startTestsCommand = new RelayCommand(param => {
+            
+            // step 1 - deploy assembly to the servers
+            foreach (string serverAddress in ServerAddressesArray) {
+              logic.DeployAssemblyToServer(SelectedAssemblyPath, serverAddress);
+            }
+
+            // step 2 - distribute tests to the servers
             // TODO
-            Console.WriteLine("Start called.");
           });
         }
         return startTestsCommand;
