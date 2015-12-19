@@ -1,5 +1,6 @@
 ﻿using PCG3.Middleware;
 using PCG3.TestFramework;
+using PCG3.Util;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -61,7 +62,7 @@ namespace PCG3.Client.Logic {
       worker.Post(request);
     }
 
-    public List<TestResult> AssemblyToList(string assemblyPath) {
+    public List<TestResult> GetTestMethodsOfAssembly(string assemblyPath) {
 
       List<TestResult> tests = new List<TestResult>();
       Assembly assembly = Assembly.LoadFrom(assemblyPath);
@@ -69,11 +70,18 @@ namespace PCG3.Client.Logic {
       foreach (Type type in assembly.GetTypes()) {
 
         foreach (MethodInfo method in type.GetMethods()) {
-          TestResult test = new TestResult();
-          test.MethodInfo = method;
-          test.Status = TestStatus.NONE;
-          test.Type = type;
-          tests.Add(test);
+
+          object[] attributes = method.GetCustomAttributes(false);
+          TestAttribute testAttribute
+            = Utilities.FindAttribute<TestAttribute>(attributes);
+
+          if (testAttribute != null) {
+            TestResult test = new TestResult();
+            test.MethodInfo = method;
+            test.Status = TestStatus.NONE;
+            test.Type = type;
+            tests.Add(test);
+          }
         }
       }
       return tests;

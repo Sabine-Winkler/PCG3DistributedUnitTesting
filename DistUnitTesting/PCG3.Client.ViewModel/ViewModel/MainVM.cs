@@ -129,7 +129,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
               SelectedAssemblyPath = openFileDialog.FileName;
               ValidAssemblyPath = (SelectedAssemblyPath != null && SelectedAssemblyPath != "");
 
-              ResultList = logic.AssemblyToList(SelectedAssemblyPath);
+              ResultList = logic.GetTestMethodsOfAssembly(SelectedAssemblyPath);
               Results
                 = new ObservableCollection<TestResult>(ResultList);
               

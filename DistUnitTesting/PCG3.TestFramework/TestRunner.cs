@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PCG3.Util;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
@@ -14,30 +15,14 @@ namespace PCG3.TestFramework {
       // currently nothing to do
     }
 
-    /// <summary>
-    /// Checks if the array of attributes contains an attribute of type T.
-    /// </summary>
-    /// <param name="attributes">attributes of a method</param>
-    /// <returns>attribute of type T or null, if not found</returns>
-    public T FindAttribute<T>(object[] attributes) where T : Attribute {
-      
-      foreach (Attribute attribute in attributes) {
-        if (attribute is T) {
-          return (T)attribute;
-        }
-      }
-
-      return null;
-    }
-
     public TestResult RunTest(TestResult result) {
       object testClass = result.Type.Assembly.CreateInstance(result.Type.FullName);
 
       object[] attributes = result.MethodInfo.GetCustomAttributes(false);
       ExpectedExceptionAttribute expectedExceptionAttribute
-            = FindAttribute<ExpectedExceptionAttribute>(attributes);
+            = Utilities.FindAttribute<ExpectedExceptionAttribute>(attributes);
       TestAttribute testAttribute
-            = FindAttribute<TestAttribute>(attributes);
+            = Utilities.FindAttribute<TestAttribute>(attributes);
 
       if (testAttribute != null) {
         return RunTest(result, testClass, expectedExceptionAttribute);
@@ -130,9 +115,9 @@ namespace PCG3.TestFramework {
 
           object[] attributes = method.GetCustomAttributes(false);
           ExpectedExceptionAttribute expectedExceptionAttribute
-            = FindAttribute<ExpectedExceptionAttribute>(attributes);
+            = Utilities.FindAttribute<ExpectedExceptionAttribute>(attributes);
           TestAttribute testAttribute
-            = FindAttribute<TestAttribute>(attributes);
+            = Utilities.FindAttribute<TestAttribute>(attributes);
 
           if (testAttribute != null) {
             TestResult result = new TestResult();
