@@ -15,42 +15,42 @@ namespace PCG3.TestFramework {
       // currently nothing to do
     }
 
-    public TestResult RunTest(TestResult result) {
-      object testClass = result.Type.Assembly.CreateInstance(result.Type.FullName);
+    public Test RunTest(Test test) {
+      object testClass = test.Type.Assembly.CreateInstance(test.Type.FullName);
 
-      object[] attributes = result.MethodInfo.GetCustomAttributes(false);
+      object[] attributes = test.MethodInfo.GetCustomAttributes(false);
       ExpectedExceptionAttribute expectedExceptionAttribute
             = Utilities.FindAttribute<ExpectedExceptionAttribute>(attributes);
       TestAttribute testAttribute
             = Utilities.FindAttribute<TestAttribute>(attributes);
 
       if (testAttribute != null) {
-        return RunTest(result, testClass, expectedExceptionAttribute);
+        return RunTest(test, testClass, expectedExceptionAttribute);
       }
       return null;
     }
 
-    public TestResult RunTest(TestResult result, object testClass,
+    public Test RunTest(Test test, object testClass,
                         ExpectedExceptionAttribute expectedExceptionAttribute) {
 
       Stopwatch watch = new Stopwatch();
 
       try {
         watch.Start();
-        result.MethodInfo.Invoke(testClass, Type.EmptyTypes);
+        test.MethodInfo.Invoke(testClass, Type.EmptyTypes);
         watch.Stop();
 
         if (expectedExceptionAttribute != null) {
           // an exception was expected, but not thrown
           // -> test failed
-          result.Exception = new NoExceptionThrownException(expectedExceptionAttribute.Type);
-          result.Failed = true;
-          result.Status = TestStatus.FAILED;
+          test.Exception = new NoExceptionThrownException(expectedExceptionAttribute.Type);
+          test.Failed = true;
+          test.Status = TestStatus.FAILED;
         } else {
           // everything is ok
           // -> test passed
-          result.Failed = false;
-          result.Status = TestStatus.PASSED;
+          test.Failed = false;
+          test.Status = TestStatus.PASSED;
         }
       } catch (Exception e) {
 
@@ -72,30 +72,30 @@ namespace PCG3.TestFramework {
 
             // ExceptedException was thrown
             // -> test passed
-            result.Failed = false;
-            result.Status = TestStatus.PASSED;
+            test.Failed = false;
+            test.Status = TestStatus.PASSED;
           } else {
 
             // another exception than the expected one was thrown
             // -> test failed
-            result.Exception = new ExpectedExceptionNotThrownException(
+            test.Exception = new ExpectedExceptionNotThrownException(
               expectedExceptionType, resultException);
-            result.Failed = true;
-            result.Status = TestStatus.FAILED;
+            test.Failed = true;
+            test.Status = TestStatus.FAILED;
           }
         } else {
 
           // an unexpected exception or AssertionFailedException was thrown
           // -> test failed
-          result.Exception = resultException;
-          result.Failed = true;
-          result.Status = TestStatus.FAILED;
+          test.Exception = resultException;
+          test.Failed = true;
+          test.Status = TestStatus.FAILED;
         }
 
       } finally {
-        result.ElapsedTime = watch.Elapsed;
+        test.ElapsedTime = watch.Elapsed;
       }
-      return result;
+      return test;
     }
 
     /// <summary>
@@ -103,9 +103,9 @@ namespace PCG3.TestFramework {
     /// </summary>
     /// <param name="assembly">loaded assembly</param>
     /// <returns>list of test results; one result per test method</returns>
-    public List<TestResult> RunTests(Assembly assembly) {
+    public List<Test> RunTests(Assembly assembly) {
 
-      List<TestResult> results = new List<TestResult>();
+      List<Test> tests = new List<Test>();
 
       foreach (Type type in assembly.GetTypes()) {
 
@@ -120,19 +120,19 @@ namespace PCG3.TestFramework {
             = Utilities.FindAttribute<TestAttribute>(attributes);
 
           if (testAttribute != null) {
-            TestResult result = new TestResult();
+            Test test = new Test();
 
-            result.MethodInfo = method;
-            result.Type = type;
-            result.Status = TestStatus.WAITING;
+            test.MethodInfo = method;
+            test.Type = type;
+            test.Status = TestStatus.WAITING;
 
-            RunTest(result, testClass, expectedExceptionAttribute);
-            results.Add(result);
+            RunTest(test, testClass, expectedExceptionAttribute);
+            tests.Add(test);
           }
         }
       }
 
-      return results;
+      return tests;
 
     }
 
@@ -141,8 +141,8 @@ namespace PCG3.TestFramework {
       TestRunner runner = new TestRunner();
       string assemblyName = @"C:\SABINE\Master\3_WS_15_16\PCG3\Teil2-Scheller\UE-Dist-Unittesting\PCG3DistributedUnitTesting\DistUnitTesting\PCG3.TestUnitTests\bin\Debug\PCG3.TestUnitTests.dll";
       Assembly assembly = Assembly.LoadFrom(assemblyName);
-      List<TestResult> results = runner.RunTests(assembly);
-      Console.WriteLine(results);
+      List<Test> tests = runner.RunTests(assembly);
+      Console.WriteLine(tests);
     }
   }
 }

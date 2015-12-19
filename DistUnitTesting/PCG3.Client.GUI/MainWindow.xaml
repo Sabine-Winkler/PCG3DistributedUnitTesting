@@ -53,7 +53,7 @@
           <RowDefinition Height="9*"/>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Text="Tests:" />
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Path=Results}"
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Path=TestColl}"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   AutoGenerateColumns="False">
           <DataGrid.Columns>

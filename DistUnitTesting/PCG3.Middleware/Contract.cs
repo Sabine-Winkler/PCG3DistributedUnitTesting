@@ -39,14 +39,14 @@ namespace PCG3.Middleware {
 
   [Serializable]
   public class TestRequest {
-    public TestResult Test { get; set; }
+    public Test Test { get; set; }
     public Port<TestResponse> ResponsePort { get; set; }
   }
 
 
   [Serializable]
   public class TestResponse {
-     public TestResult Result { get; set; }
+     public Test Result { get; set; }
 
   }
   

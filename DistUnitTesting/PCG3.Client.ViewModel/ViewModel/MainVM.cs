@@ -15,7 +15,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
     private bool validServerAddresses;
     private bool validAssemblyPath;
     private bool validServersAndAssembly; // for 'Start' button
-    private ObservableCollection<TestResult> results;
+    private ObservableCollection<Test> testColl;
     private ClientLogic logic;
 
     public MainVM() {
@@ -99,15 +99,15 @@ namespace PCG3.Client.ViewModel.ViewModel {
       }
     }
 
-    private List<TestResult> ResultList { get; set; }
+    private List<Test> TestList { get; set; }
 
-    public ObservableCollection<TestResult> Results {
-      get { return results; }
+    public ObservableCollection<Test> TestColl {
+      get { return testColl; }
 
       set {
-        if (results != value) {
-          results = value;
-          RaisePropertyChangedEvent(vm => vm.results);
+        if (testColl != value) {
+          testColl = value;
+          RaisePropertyChangedEvent(vm => vm.testColl);
         }
       }
     }
@@ -129,9 +129,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
               SelectedAssemblyPath = openFileDialog.FileName;
               ValidAssemblyPath = (SelectedAssemblyPath != null && SelectedAssemblyPath != "");
 
-              ResultList = logic.GetTestMethodsOfAssembly(SelectedAssemblyPath);
-              Results
-                = new ObservableCollection<TestResult>(ResultList);
+              TestList = logic.GetTestMethodsOfAssembly(SelectedAssemblyPath);
+              TestColl
+                = new ObservableCollection<Test>(TestList);
               
             }
           });
@@ -155,7 +155,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
             }
 
             // step 2 - send tests to the servers
-            logic.SendTestsToServer(ResultList, ServerAddressesArray);
+            logic.SendTestsToServer(TestList, ServerAddressesArray);
 
           });
         }

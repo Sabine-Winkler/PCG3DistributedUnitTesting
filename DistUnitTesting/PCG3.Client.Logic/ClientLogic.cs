@@ -39,11 +39,11 @@ namespace PCG3.Client.Logic {
       serverWorker.Post(deployAssemblyRequest);
     }
 
-    public void SendTestsToServer(List<TestResult> tests, string[] serverAddresses) {
+    public void SendTestsToServer(List<Test> tests, string[] serverAddresses) {
 
 
       //Test first test
-      TestResult test = tests[0];
+      Test test = tests[0];
       string serverAddress = serverAddresses[0];
       TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress);
       TestRequest request = new TestRequest();
@@ -62,9 +62,9 @@ namespace PCG3.Client.Logic {
       worker.Post(request);
     }
 
-    public List<TestResult> GetTestMethodsOfAssembly(string assemblyPath) {
+    public List<Test> GetTestMethodsOfAssembly(string assemblyPath) {
 
-      List<TestResult> tests = new List<TestResult>();
+      List<Test> tests = new List<Test>();
       Assembly assembly = Assembly.LoadFrom(assemblyPath);
 
       foreach (Type type in assembly.GetTypes()) {
@@ -76,7 +76,7 @@ namespace PCG3.Client.Logic {
             = Utilities.FindAttribute<TestAttribute>(attributes);
 
           if (testAttribute != null) {
-            TestResult test = new TestResult();
+            Test test = new Test();
             test.MethodInfo = method;
             test.Status = TestStatus.NONE;
             test.Type = type;

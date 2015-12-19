@@ -4,10 +4,10 @@ using System.Reflection;
 namespace PCG3.TestFramework {
 
   /// <summary>
-  /// Result of a test method executed by the test runner.
+  /// Test method executed by the test runner.
   /// </summary>
   [Serializable]
-  public class TestResult {
+  public class Test {
 
     public MethodInfo MethodInfo  { get; set; }
     public Exception  Exception   { get; set; }
