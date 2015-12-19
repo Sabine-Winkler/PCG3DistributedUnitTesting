@@ -5,26 +5,24 @@ using System.Reflection;
 using XcoAppSpaces.Core;
 
 namespace PCG3.Server {
-  class ServerAssemblyWorker : AssemblyWorker {
+
+  public class ServerAssemblyWorker : AssemblyWorker {
 
     [XcoConcurrent]
     public void Process(AssemblyRequest assemblyRequest) {
+
       var response = new AssemblyResponse();
+    
       try {
         Assembly.Load(assemblyRequest.Bytes);
         response.Worked = true;
         Console.WriteLine("Assembly got load on Server.");
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         response.Worked = false;
         response.ErrorMsg = e.ToString();
-      }
-      finally {
+      } finally {
         assemblyRequest.ResponsePort.Post(response);
       }
-
-
-      
     }
   }
 
