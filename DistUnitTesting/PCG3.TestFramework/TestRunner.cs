@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
@@ -117,9 +118,9 @@ namespace PCG3.TestFramework {
     /// </summary>
     /// <param name="assembly">loaded assembly</param>
     /// <returns>list of test results; one result per test method</returns>
-    public TestResults RunTests(Assembly assembly) {
+    public List<TestResult> RunTests(Assembly assembly) {
 
-      TestResults results = new TestResults();
+      List<TestResult> results = new List<TestResult>();
 
       foreach (Type type in assembly.GetTypes()) {
 
@@ -155,7 +156,7 @@ namespace PCG3.TestFramework {
       TestRunner runner = new TestRunner();
       string assemblyName = @"C:\SABINE\Master\3_WS_15_16\PCG3\Teil2-Scheller\UE-Dist-Unittesting\PCG3DistributedUnitTesting\DistUnitTesting\PCG3.TestUnitTests\bin\Debug\PCG3.TestUnitTests.dll";
       Assembly assembly = Assembly.LoadFrom(assemblyName);
-      TestResults results = runner.RunTests(assembly);
+      List<TestResult> results = runner.RunTests(assembly);
       Console.WriteLine(results);
     }
   }
