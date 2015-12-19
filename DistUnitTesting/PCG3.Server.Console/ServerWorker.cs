@@ -1,34 +1,28 @@
 ﻿using PCG3.Middleware;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using XcoAppSpaces.Core;
-using System.Reflection;
 using PCG3.TestFramework;
+using System;
+using System.Reflection;
+using XcoAppSpaces.Core;
 
 namespace PCG3.Server {
-  class ServerAssemblyWorker : AssemblyWorker {
+
+  public class ServerAssemblyWorker : AssemblyWorker {
 
     [XcoConcurrent]
     public void Process(AssemblyRequest assemblyRequest) {
+
       var response = new AssemblyResponse();
+    
       try {
         Assembly.Load(assemblyRequest.Bytes);
         response.Worked = true;
         Console.WriteLine("Assembly got load on Server.");
-      }
-      catch (Exception e) {
+      } catch (Exception e) {
         response.Worked = false;
         response.ErrorMsg = e.ToString();
-      }
-      finally {
+      } finally {
         assemblyRequest.ResponsePort.Post(response);
       }
-
-
-      
     }
   }
 
@@ -38,13 +32,15 @@ namespace PCG3.Server {
     [XcoConcurrent]
     public void Process(TestRequest testRequest) {
       
-      Console.WriteLine("####> in Process: " + testRequest);
+      Console.WriteLine("####> in Process: " + testRequest.Test.MethodName);
       TestResponse response = new TestResponse();
 
       TestRunner tr = new TestRunner();
 
       response.Result =
          tr.RunTest(testRequest.Test);
+
+      Console.WriteLine("Result: " + response.Result);
 
       testRequest.ResponsePort.Post(response);
     }

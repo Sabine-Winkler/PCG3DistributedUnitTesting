@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using PCG3.Middleware;
+using System;
 using XcoAppSpaces.Core;
-using PCG3.Middleware;
 
 namespace PCG3.Server {
 
@@ -13,19 +9,19 @@ namespace PCG3.Server {
     public static void Main(string[] args) {
 
       int cores = 4, port = 9000;
+      
       #region parametercheck
-      if (args.Length > 0) { }
-      try {
-        cores = int.Parse(args[0]);
-      }
-      catch (Exception) {
-        cores = 4;
+      if (args.Length > 0) {
+        try {
+          cores = int.Parse(args[0]);
+        } catch (Exception) {
+          cores = 4;
+        }
       }
       if (args.Length > 1) {
         try {
           port = int.Parse(args[1]);
-        }
-        catch (Exception) {
+        } catch (Exception) {
           port = 9000;
         }
       }
@@ -44,11 +40,6 @@ namespace PCG3.Server {
 
         Console.ReadLine();
       }
-
-
     }
-
-
-
   }
 }

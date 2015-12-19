@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 namespace PCG3.TestFramework {
 
@@ -9,7 +8,7 @@ namespace PCG3.TestFramework {
   [Serializable]
   public class Test {
 
-    public MethodInfo MethodInfo  { get; set; }
+    public string     MethodName { get; set; }
     public Exception  Exception   { get; set; }
     public TimeSpan   ElapsedTime { get; set; }
     public bool       Failed      { get; set; }
@@ -17,7 +16,10 @@ namespace PCG3.TestFramework {
     public Type       Type        { get; set; }
 
     public override string ToString() {
-      return MethodInfo.ToString();
+       
+       string exceptionText = (Exception != null) ? Exception.Message : "null";
+       return String.Format("MethodName={0}, Exception={1}, Failed={2}, Status={3}, Type={4}",
+                             MethodName, exceptionText, Failed, Status, Type.FullName);
     }
   }
 }
