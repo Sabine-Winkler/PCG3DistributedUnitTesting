@@ -16,9 +16,12 @@ namespace PCG3.TestFramework {
     }
 
     public Test RunTest(Test test) {
+
       object testClass = test.Type.Assembly.CreateInstance(test.Type.FullName);
 
-      object[] attributes = test.MethodInfo.GetCustomAttributes(false);
+      MethodInfo method = test.Type.GetMethod(test.MethodName);
+
+      object[] attributes = method.GetCustomAttributes(false);
       ExpectedExceptionAttribute expectedExceptionAttribute
             = Utilities.FindAttribute<ExpectedExceptionAttribute>(attributes);
       TestAttribute testAttribute
@@ -37,7 +40,8 @@ namespace PCG3.TestFramework {
 
       try {
         watch.Start();
-        test.MethodInfo.Invoke(testClass, Type.EmptyTypes);
+        MethodInfo method = test.Type.GetMethod(test.MethodName);
+        method.Invoke(testClass, Type.EmptyTypes);
         watch.Stop();
 
         if (expectedExceptionAttribute != null) {
@@ -122,7 +126,7 @@ namespace PCG3.TestFramework {
           if (testAttribute != null) {
             Test test = new Test();
 
-            test.MethodInfo = method;
+            test.MethodName = method.Name;
             test.Type = type;
             test.Status = TestStatus.WAITING;
 

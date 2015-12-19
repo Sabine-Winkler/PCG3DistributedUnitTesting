@@ -102,7 +102,7 @@ namespace PCG3.Client.Logic {
 
           if (testAttribute != null) {
             Test test = new Test();
-            test.MethodInfo = method;
+            test.MethodName = method.Name;
             test.Status = TestStatus.NONE;
             test.Type = type;
             tests.Add(test);
