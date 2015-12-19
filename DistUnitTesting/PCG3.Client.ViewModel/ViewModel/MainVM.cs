@@ -18,8 +18,10 @@ namespace PCG3.Client.ViewModel.ViewModel {
     private ObservableCollection<Test> testColl;
     private ClientLogic logic;
 
-    public MainVM() {
+    public MainVM(string assembly, string serverAddresses) {
       logic = new ClientLogic();
+      SelectedAssemblyPath = assembly;
+      ServerAddresses = serverAddresses;
     }
 
     public string SelectedAssemblyPath {
@@ -29,6 +31,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
       set {
         if (selectedAssemblyPath != value) {
           selectedAssemblyPath = value;
+          ValidAssemblyPath = (selectedAssemblyPath != null && selectedAssemblyPath != "");
+          TestList = logic.GetTestMethodsOfAssembly(selectedAssemblyPath);
+          TestColl = new ObservableCollection<Test>(TestList);
           RaisePropertyChangedEvent(vm => vm.selectedAssemblyPath);
         }
       }
@@ -126,13 +131,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
 
             bool? result = openFileDialog.ShowDialog();
             if (result == true) {
-              SelectedAssemblyPath = openFileDialog.FileName;
-              ValidAssemblyPath = (SelectedAssemblyPath != null && SelectedAssemblyPath != "");
-
-              TestList = logic.GetTestMethodsOfAssembly(SelectedAssemblyPath);
-              TestColl
-                = new ObservableCollection<Test>(TestList);
-              
+              SelectedAssemblyPath = openFileDialog.FileName;              
             }
           });
         }

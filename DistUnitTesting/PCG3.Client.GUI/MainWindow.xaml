@@ -57,10 +57,10 @@
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   AutoGenerateColumns="False">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Class"       Width="13*" Binding="{Binding Path=Type.FullName}" />
-            <DataGridTextColumn Header="Method"      Width="12*" Binding="{Binding Path=MethodInfo}" />
+            <DataGridTextColumn Header="Class"       Width="15*" Binding="{Binding Path=Type.FullName}" />
+            <DataGridTextColumn Header="Method"      Width="15*" Binding="{Binding Path=MethodInfo}" />
             <DataGridTextColumn Header="Status"      Width="10*" Binding="{Binding Path=Status}" />
-            <DataGridTextColumn Header="ElapsedTime" Width="15*" Binding="{Binding Path=ElapsedTime}" />
+            <DataGridTextColumn Header="ElapsedTime" Width="10*" Binding="{Binding Path=ElapsedTime}" />
             <DataGridTextColumn Header="Result"      Width="50*" Binding="{Binding Path=Exception}" />
           </DataGrid.Columns>
       </DataGrid>
