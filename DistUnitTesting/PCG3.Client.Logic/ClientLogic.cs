@@ -1,6 +1,9 @@
 ﻿using PCG3.Middleware;
+using PCG3.TestFramework;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using XcoAppSpaces.Core;
 
 namespace PCG3.Client.Logic {
@@ -33,6 +36,44 @@ namespace PCG3.Client.Logic {
       });
 
       serverWorker.Post(deployAssemblyRequest);
+    }
+
+    public void SendTestsToServer(string assemblyPath, string serverAddress) {
+
+      List<TestResult> list = AssemblyToList(assemblyPath);
+
+      TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress);
+      TestRequest request = new TestRequest();
+      request.Test = list[0];
+      //TODO
+      
+      request.ResponsePort = space.Receive<TestResponse>(resp => {
+        //TODO
+      });
+
+
+      worker.Post(request);
+    }
+
+    private List<TestResult> AssemblyToList(string assemblyPath) {
+      List<TestResult> list = new List<TestResult>();
+      Assembly assembly = Assembly.LoadFrom(assemblyPath);
+
+      TestResults results = new TestResults();
+
+      foreach (Type type in assembly.GetTypes()) {
+
+        object testClass = type.Assembly.CreateInstance(type.FullName);
+
+        foreach (MethodInfo method in type.GetMethods()) {
+          TestResult test = new TestResult();
+          test.MethodInfo = method;
+          list.Add(test);
+        }
+      }
+
+
+      return list;
     }
   }
 }
