@@ -31,16 +31,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="TestUnitTests2.cs" />
-    <Compile Include="TestUnitTests.cs" />
+    <Compile Include="BaseTests.cs" />
+    <Compile Include="LongRunningTests.cs" />
+    <Compile Include="ManyDifferentShortRunningTests.cs" />
+    <Compile Include="ManyShortRunningTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

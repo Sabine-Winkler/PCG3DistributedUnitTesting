@@ -3,6 +3,9 @@ using System;
 
 namespace PCG3.TestUnitTests {
 
+  /// <summary>
+  /// Set of 5 base tests to check, if the test framework works as expected.
+  /// </summary>
   public class TestUnitTests {
 
     /// <summary>
