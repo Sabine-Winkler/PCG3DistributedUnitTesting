@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{911C45FB-9108-4E58-B77F-676E001ACA5E}</ProjectGuid>
+    <ProjectGuid>{8A2940C2-9615-4287-9A92-1724889A55B0}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>PCG3.TestUnitTests</RootNamespace>
-    <AssemblyName>PCG3.TestUnitTests</AssemblyName>
+    <RootNamespace>PCG3.TestUnitTestsSimple</RootNamespace>
+    <AssemblyName>PCG3.TestUnitTestsSimple</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -34,9 +34,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseTests.cs" />
-    <Compile Include="LongRunningTests.cs" />
-    <Compile Include="ManyDifferentShortRunningTests.cs" />
-    <Compile Include="ManyShortRunningTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

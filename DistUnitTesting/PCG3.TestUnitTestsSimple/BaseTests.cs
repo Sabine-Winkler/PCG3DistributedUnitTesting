@@ -1,16 +1,19 @@
 ﻿using PCG3.TestFramework;
 using System;
 
-namespace PCG3.TestUnitTests {
+namespace PCG3.TestUnitTestsSimple {
 
-  public class TestUnitTests2 {
+  /// <summary>
+  /// Set of 5 base tests to check, if the test framework works as expected.
+  /// </summary>
+  public class BaseTests {
 
     /// <summary>
     /// Adds two numbers and compares the actual result with the expected one.
     /// Test passes.
     /// </summary>
     [Test]
-    public void AddTest2() {
+    public void AddTest() {
       int expected = 3;
       int actual   = 1 + 2;
       Assert.AreEqual(expected, actual);
@@ -21,7 +24,7 @@ namespace PCG3.TestUnitTests {
     /// Test fails.
     /// </summary>
     [Test]
-    public void AddFailingTest2() {
+    public void AddFailingTest() {
       int expected = 4;
       int actual   = 1 + 2;
       Assert.AreEqual(expected, actual);
@@ -33,7 +36,7 @@ namespace PCG3.TestUnitTests {
     /// </summary>
     [Test]
     [ExpectedException(typeof(DivideByZeroException))]
-    public void DivideByZeroTest2() {
+    public void DivideByZeroTest() {
       int zero   = 1 - 1;
       int result = 3 / zero;
     }
@@ -44,7 +47,7 @@ namespace PCG3.TestUnitTests {
     /// </summary>
     [Test]
     [ExpectedException(typeof(IndexOutOfRangeException))]
-    public void AnotherExceptionThrownTest2() {
+    public void AnotherExceptionThrownTest() {
       int zero = 1 - 1;
       int result = 3 / zero; // throws a DivideByZeroException
     }
@@ -55,14 +58,14 @@ namespace PCG3.TestUnitTests {
     /// </summary>
     [Test]
     [ExpectedException(typeof(DivideByZeroException))]
-    public void NoExceptionThrownTest2() {
+    public void NoExceptionThrownTest() {
       int result = 10 / 5;
     }
 
     /// <summary>
     /// This method is not intended to be executed by a test runner.
     /// </summary>
-    public void ThisTestIsNotExecutedTest2() {
+    public void ThisTestIsNotExecutedTest() {
       // nothing to do here
     }
   }

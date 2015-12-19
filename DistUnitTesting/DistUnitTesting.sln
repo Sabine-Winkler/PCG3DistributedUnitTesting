@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.Client.Logic", "PCG3.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.Util", "PCG3.Util\PCG3.Util.csproj", "{6B83B0F0-259A-40BB-816B-5669B14E3013}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.TestUnitTestsSimple", "PCG3.TestUnitTestsSimple\PCG3.TestUnitTestsSimple.csproj", "{8A2940C2-9615-4287-9A92-1724889A55B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{6B83B0F0-259A-40BB-816B-5669B14E3013}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B83B0F0-259A-40BB-816B-5669B14E3013}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B83B0F0-259A-40BB-816B-5669B14E3013}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A2940C2-9615-4287-9A92-1724889A55B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A2940C2-9615-4287-9A92-1724889A55B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A2940C2-9615-4287-9A92-1724889A55B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A2940C2-9615-4287-9A92-1724889A55B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

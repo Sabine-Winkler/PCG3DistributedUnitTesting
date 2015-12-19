@@ -3,7 +3,10 @@ using System;
 
 namespace PCG3.TestUnitTests {
 
-  public class TestUnitTests {
+  /// <summary>
+  /// Set of 5 base tests to check, if the test framework works as expected.
+  /// </summary>
+  public class BaseTests {
 
     /// <summary>
     /// Adds two numbers and compares the actual result with the expected one.
