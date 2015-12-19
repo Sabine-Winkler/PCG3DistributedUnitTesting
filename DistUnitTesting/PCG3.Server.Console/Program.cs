@@ -23,7 +23,7 @@ namespace PCG3.Server {
       }
       if (args.Length > 1) {
         try {
-          port = int.Parse(args[0]);
+          port = int.Parse(args[1]);
         }
         catch (Exception) {
           port = 9000;
@@ -32,14 +32,13 @@ namespace PCG3.Server {
       #endregion
 
 
-
-
-      Console.WriteLine("Xco Application Space - Distributed Workers Server");
-      using (var space = new XcoAppSpace($"tcp.port={port}")) {
+      Console.WriteLine("Xco Application Space - Distributed Unittesting Server");
+      using (var space = new XcoAppSpace(string.Format("tcp.port={0}", port))) {
         //run worker in server space
         space.RunWorker<AssemblyWorker, ServerAssemblyWorker>();
-        //space.RunWorker<TestWorker, ServerTestWorker>();
-        Console.WriteLine("running...");
+        Console.WriteLine(string.Format("AssemblyWorker on {0}: running...", port));
+        space.RunWorker<TestWorker, ServerTestWorker>();
+        Console.WriteLine(string.Format("TestWorker on {0}: running...", port));
 
         Console.ReadLine();
       }
