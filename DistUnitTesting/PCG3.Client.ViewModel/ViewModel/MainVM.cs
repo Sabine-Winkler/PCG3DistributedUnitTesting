@@ -1,6 +1,9 @@
 ﻿using Microsoft.Win32;
 using PCG3.Client.Logic;
+using PCG3.TestFramework;
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 
 namespace PCG3.Client.ViewModel.ViewModel {
@@ -12,6 +15,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
     private bool validServerAddresses;
     private bool validAssemblyPath;
     private bool validServersAndAssembly; // for 'Start' button
+    private ObservableCollection<TestResult> results;
     private ClientLogic logic;
 
     public MainVM() {
@@ -95,6 +99,19 @@ namespace PCG3.Client.ViewModel.ViewModel {
       }
     }
 
+    private List<TestResult> ResultList { get; set; }
+
+    public ObservableCollection<TestResult> Results {
+      get { return results; }
+
+      set {
+        if (results != value) {
+          results = value;
+          RaisePropertyChangedEvent(vm => vm.results);
+        }
+      }
+    }
+
     private ICommand selectAssemblyCommand;
     public ICommand SelectAssemblyCommand {
       
@@ -111,6 +128,11 @@ namespace PCG3.Client.ViewModel.ViewModel {
             if (result == true) {
               SelectedAssemblyPath = openFileDialog.FileName;
               ValidAssemblyPath = (SelectedAssemblyPath != null && SelectedAssemblyPath != "");
+
+              ResultList = logic.AssemblyToList(SelectedAssemblyPath);
+              Results
+                = new ObservableCollection<TestResult>(ResultList);
+              
             }
           });
         }
@@ -126,13 +148,15 @@ namespace PCG3.Client.ViewModel.ViewModel {
         if (startTestsCommand == null) {
           startTestsCommand = new RelayCommand(param => {
             
-            // step 1 - deploy assembly to the servers
             foreach (string serverAddress in ServerAddressesArray) {
+
+              // step 1 - deploy assembly to the servers
               logic.DeployAssemblyToServer(SelectedAssemblyPath, serverAddress);
             }
 
-            // step 2 - distribute tests to the servers
-            // TODO
+            // step 2 - send tests to the servers
+            logic.SendTestsToServer(ResultList, ServerAddressesArray);
+
           });
         }
         return startTestsCommand;

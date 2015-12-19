@@ -53,15 +53,15 @@
           <RowDefinition Height="9*"/>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" Text="Tests:" />
-        <DataGrid Grid.Row="1"
-                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-                  Name="dataGridTestResults">
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Path=Results}"
+                  HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                  AutoGenerateColumns="False">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Class"       Width="13*" Binding="{Binding Path=TestResults.TestClass}"       />
-            <DataGridTextColumn Header="Method"      Width="12*" Binding="{Binding Path=TestResults.TestMethod}"      />
-            <DataGridTextColumn Header="Status"      Width="10*" Binding="{Binding Path=TestResults.TestStatus}"      />
-            <DataGridTextColumn Header="ElapsedTime" Width="15*" Binding="{Binding Path=TestResults.TestElapsedTime}" />
-            <DataGridTextColumn Header="Result"      Width="50*" Binding="{Binding Path=TestResults.TestResult}"      />
+            <DataGridTextColumn Header="Class"       Width="13*" Binding="{Binding Path=Type.FullName}" />
+            <DataGridTextColumn Header="Method"      Width="12*" Binding="{Binding Path=MethodInfo}" />
+            <DataGridTextColumn Header="Status"      Width="10*" Binding="{Binding Path=Status}" />
+            <DataGridTextColumn Header="ElapsedTime" Width="15*" Binding="{Binding Path=ElapsedTime}" />
+            <DataGridTextColumn Header="Result"      Width="50*" Binding="{Binding Path=Exception}" />
           </DataGrid.Columns>
       </DataGrid>
     </Grid>

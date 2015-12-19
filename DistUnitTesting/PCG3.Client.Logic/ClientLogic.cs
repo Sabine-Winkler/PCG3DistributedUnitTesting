@@ -38,7 +38,7 @@ namespace PCG3.Client.Logic {
       serverWorker.Post(deployAssemblyRequest);
     }
 
-    public void SendTestsToServer(TestResults tests, string[] serverAddresses) {
+    public void SendTestsToServer(List<TestResult> tests, string[] serverAddresses) {
 
 
       //Test first test
@@ -61,25 +61,22 @@ namespace PCG3.Client.Logic {
       worker.Post(request);
     }
 
-    private List<TestResult> AssemblyToList(string assemblyPath) {
-      List<TestResult> list = new List<TestResult>();
+    public List<TestResult> AssemblyToList(string assemblyPath) {
+
+      List<TestResult> tests = new List<TestResult>();
       Assembly assembly = Assembly.LoadFrom(assemblyPath);
 
-      TestResults results = new TestResults();
-
       foreach (Type type in assembly.GetTypes()) {
-
-        object testClass = type.Assembly.CreateInstance(type.FullName);
 
         foreach (MethodInfo method in type.GetMethods()) {
           TestResult test = new TestResult();
           test.MethodInfo = method;
-          list.Add(test);
+          test.Status = TestStatus.NONE;
+          test.Type = type;
+          tests.Add(test);
         }
       }
-
-
-      return list;
+      return tests;
     }
   }
 }
