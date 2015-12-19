@@ -12,5 +12,3 @@ namespace PCG3.Client.GUI {
   }
 
 }
-  
-
