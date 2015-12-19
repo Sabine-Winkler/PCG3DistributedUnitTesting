@@ -57,9 +57,8 @@
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   AutoGenerateColumns="False">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Class"       Width="18*" Binding="{Binding Path=Type.FullName, Mode=OneWay}"/>
-            <DataGridTextColumn Header="Returns"     Width="7*" Binding="{Binding Path=MethodInfo.ReturnParameter, Mode=OneWay}" />
-            <DataGridTextColumn Header="Method"      Width="15*" Binding="{Binding Path=MethodInfo.Name, Mode=OneWay}" />
+            <DataGridTextColumn Header="Class"       Width="25*" Binding="{Binding Path=Type.FullName, Mode=OneWay}"/>
+            <DataGridTextColumn Header="Method"      Width="15*" Binding="{Binding Path=MethodName, Mode=OneWay}" />
             <DataGridTextColumn Header="Status"      Width="10*" Binding="{Binding Path=Status, Mode=OneWay}" />
             <DataGridTextColumn Header="ElapsedTime" Width="10*" Binding="{Binding Path=ElapsedTime, Mode=OneWay}" />
             <DataGridTextColumn Header="Result"      Width="40*" Binding="{Binding Path=Exception, Mode=OneWay}" />
