@@ -7,5 +7,14 @@ namespace PCG3.TestFramework {
   /// Results of a list of test methods executed by the test runner.
   /// </summary>
   [Serializable]
-  public class TestResults : List<TestResult> { }
+  public class TestResults : List<TestResult> {
+
+    public override string ToString() {
+      string help ="";
+       foreach(TestResult result in this) {
+        help += result + "\n";
+      }
+      return help;
+    }
+  }
 }
