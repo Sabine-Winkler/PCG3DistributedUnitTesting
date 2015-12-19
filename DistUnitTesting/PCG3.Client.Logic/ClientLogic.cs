@@ -19,48 +19,73 @@ namespace PCG3.Client.Logic {
       this.space = new XcoAppSpace(APP_SPACE_CONFIG_STRING);
     }
 
+    ~ClientLogic() {
+      this.space.Dispose();
+    }
+    
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="assemblyPath"></param>
-    /// <param name="serverAddress"></param>
-    public void DeployAssemblyToServer(string assemblyPath, string serverAddress) {
+    /// <param name="serverAddresses"></param>
+    public void DeployAssemblyToServer(string assemblyPath, string[] serverAddresses) {
+      
+        foreach (string serverAddress in serverAddresses) {
+            AssemblyWorker serverWorker = space.ConnectWorker<AssemblyWorker>(serverAddress);
+            AssemblyRequest deployAssemblyRequest = new AssemblyRequest();
+            deployAssemblyRequest.Bytes = File.ReadAllBytes(assemblyPath);
+            deployAssemblyRequest.ResponsePort = space.Receive<AssemblyResponse>(resp => {
+              if (!resp.Worked) {
+                Console.WriteLine("###> " + resp.ErrorMsg);
+              }
+              else {
+                Console.WriteLine("###> Deployment of Assembly worked");
+              }
+            });
 
-      AssemblyWorker serverWorker = space.ConnectWorker<AssemblyWorker>(serverAddress);
-      AssemblyRequest deployAssemblyRequest = new AssemblyRequest();
-      deployAssemblyRequest.Bytes = File.ReadAllBytes(assemblyPath);
-      deployAssemblyRequest.ResponsePort = space.Receive<AssemblyResponse>(resp => {
-        if (!resp.Worked) {
-          // print error message if assembly deployment failed
-          Console.WriteLine(resp.ErrorMsg);
+            serverWorker.Post(deployAssemblyRequest);
+          }
+      
+    }
+
+
+  public void SendTestsToServer(List<Test> tests, string[] serverAddresses) {
+
+     
+        //Test first test
+        Test test = tests[0];
+        string serverAddress = serverAddresses[0];
+        TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress);
+        TestRequest request = new TestRequest();
+        request.Test = test;
+
+        request.ResponsePort = space.Receive<TestResponse>(resp => {
+          Console.WriteLine("###> " + resp.Result);
+        });
+
+
+        worker.Post(request);
+
+        /*foreach (Test t in tests) {
+
+          TestRequest request = new TestRequest();
+          request.Test = t;
+          request.ResponsePort = sp.Receive<TestResponse>(resp => {
+            Console.WriteLine("###> " + resp.Result);
+            Console.WriteLine(resp.Result.MethodInfo.Name);
+          });
+
+          Console.WriteLine("***> " + t.MethodInfo);
+          worker.Post(request);
         }
-      });
+      }*/
 
-      serverWorker.Post(deployAssemblyRequest);
+
+       
+      
     }
 
-    public void SendTestsToServer(List<Test> tests, string[] serverAddresses) {
-
-
-      //Test first test
-      Test test = tests[0];
-      string serverAddress = serverAddresses[0];
-      TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress);
-      TestRequest request = new TestRequest();
-      request.Test = test;
-
-      //Parallel here
-
-
-
-
-      request.ResponsePort = space.Receive<TestResponse>(resp => {
-        Console.WriteLine(resp.Result);
-      });
-
-
-      worker.Post(request);
-    }
 
     public List<Test> GetTestMethodsOfAssembly(string assemblyPath) {
 

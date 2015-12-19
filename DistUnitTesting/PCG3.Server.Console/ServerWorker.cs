@@ -11,13 +11,11 @@ using PCG3.TestFramework;
 namespace PCG3.Server {
   class ServerAssemblyWorker : AssemblyWorker {
 
-
-    //bytearray 
     [XcoConcurrent]
-    public void Process(AssemblyRequest assembly) {
+    public void Process(AssemblyRequest assemblyRequest) {
       var response = new AssemblyResponse();
       try {
-        Assembly.Load(assembly.Bytes);
+        Assembly.Load(assemblyRequest.Bytes);
         response.Worked = true;
         Console.WriteLine("Assembly got load on Server.");
       }
@@ -26,7 +24,7 @@ namespace PCG3.Server {
         response.ErrorMsg = e.ToString();
       }
       finally {
-        assembly.ResponsePort.Post(response);
+        assemblyRequest.ResponsePort.Post(response);
       }
 
 
@@ -37,18 +35,10 @@ namespace PCG3.Server {
 
   public class ServerTestWorker : TestWorker {
 
-    public int Cores { get; set; }
-    public List<Task> Tasks { get; set; }
-
-    //public ServerTestWorker(int Cores) {
-    //  //this.Cores = Cores;
-    //  //for (int i = 1; i <= Cores; i++) {
-    //  //  Tasks.Add(new Task())
-    //  //}
-    //}
-
     [XcoConcurrent]
     public void Process(TestRequest testRequest) {
+      
+      Console.WriteLine("####> in Process: " + testRequest);
       TestResponse response = new TestResponse();
 
       TestRunner tr = new TestRunner();
@@ -56,22 +46,6 @@ namespace PCG3.Server {
       response.Result =
          tr.RunTest(testRequest.Test);
 
-
-      // //Tasks (nicht Threads)
-      // //waitany
-      //// for 
-      // Task t = Task.Run( () => {
-      //   // Just loop.
-      //   int ctr = 0;
-      //   for (ctr = 0; ctr <= 1000000; ctr++)
-      //                             {}
-      //   Console.WriteLine("Finished {0} loop iterations",
-      //                                               ctr);
-      // } );
-      // t.Wait();
-
-
-      //response.result = Testresult;
       testRequest.ResponsePort.Post(response);
     }
   }
