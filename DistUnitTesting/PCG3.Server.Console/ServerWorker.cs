@@ -1,14 +1,16 @@
 ﻿using PCG3.Middleware;
 using PCG3.TestFramework;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using XcoAppSpaces.Core;
 
 namespace PCG3.Server {
 
   public class ServerAssemblyWorker : AssemblyWorker {
 
-    [XcoConcurrent]
+    [XcoExclusive]
     public void Process(AssemblyRequest assemblyRequest) {
 
       var response = new AssemblyResponse();
@@ -26,23 +28,41 @@ namespace PCG3.Server {
     }
   }
 
-
   public class ServerTestWorker : TestWorker {
 
-    [XcoConcurrent]
-    public void Process(TestRequest testRequest) {
-      
-      Console.WriteLine("####> in Process: " + testRequest.Test.MethodName);
-      TestResponse response = new TestResponse();
+    [XcoExclusive]
+    public void Process(TestRequestTest testRequest) {
+      var response = new TestResponseResult();
+      List<Test> results = new List<Test>();
+      Parallel.ForEach(testRequest.Tests, test => {
+        Console.WriteLine("####> in Process: " + test.MethodName);
 
-      TestRunner tr = new TestRunner();
 
-      response.Result =
-         tr.RunTest(testRequest.Test);
+        coresInUse++;
+        TestRunner tr = new TestRunner();
+        Test result =  tr.RunTest(test);
+        results.Add(result);
+        coresInUse--;
 
-      Console.WriteLine("Result: " + response.Result);
 
+        //Console.WriteLine("######> {0} of {1} available cores in use", coresInUse, Cores);
+        Console.WriteLine("###> Result: " + result);
+
+
+      });
+      response.Results = results;
       testRequest.ResponsePort.Post(response);
+
     }
+
+    //[XcoConcurrent]
+    //private Test runTest(Test test) {
+    //  TestRunner tr = new TestRunner();
+    //  return tr.RunTest(test);
+    //}
+  
+
   }
 }
+  
+

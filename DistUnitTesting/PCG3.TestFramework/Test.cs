@@ -13,7 +13,7 @@ namespace PCG3.TestFramework {
     public TimeSpan   ElapsedTime { get; set; }
     public bool       Failed      { get; set; }
     public string     Status      { get; set; }
-    public Type       Type        { get; set; }
+    public Type Type { get; set; }
 
     public override string ToString() {
        

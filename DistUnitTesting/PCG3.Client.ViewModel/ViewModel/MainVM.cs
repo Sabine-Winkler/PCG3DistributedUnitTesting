@@ -161,6 +161,8 @@ namespace PCG3.Client.ViewModel.ViewModel {
             // step 2 - send tests to the servers
             logic.SendTestsToServer(TestList, ServerAddressesArray);
 
+
+
          });
         }
         return startTestsCommand;

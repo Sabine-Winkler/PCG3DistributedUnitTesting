@@ -1,6 +1,7 @@
 ﻿using Microsoft.Ccr.Core;
 using PCG3.TestFramework;
 using System;
+using System.Collections.Generic;
 
 namespace PCG3.Middleware {
 
@@ -20,17 +21,46 @@ namespace PCG3.Middleware {
   }
 
 
-  public class TestWorker : Port<TestRequest> {
+  public class TestWorker : Port<TestRequestTest> {
+
+  
+    public TestWorker() {
+      this.Cores = 1;
+      this.coresInUse = 0;
+    }
+    public int Cores { get; set; }
+    protected int coresInUse;
+    
+    public int AvailableCores() {
+      return Cores - coresInUse;
+    }
+    
   }
 
   [Serializable]
-  public class TestRequest {
-    public Test Test { get; set; }
-    public Port<TestResponse> ResponsePort { get; set; }
+  public class TestRequestTest {
+    public List<Test> Tests { get; set; }
+    public Port<TestResponseResult> ResponsePort { get; set; }
   }
 
+
   [Serializable]
-  public class TestResponse {
-     public Test Result { get; set; }
+  public class TestResponseResult {
+    public List<Test> Results { get; set; }
   }
+  /*
+  [Serializable]
+  public class TestRequestAvailableCoreFromServer {
+    public Port<TestResponseAvailableCore> ResponsePort { get; set; }
+  }
+
+  
+  [Serializable]
+  public class TestResponseAvailableCore {
+    public bool availableCore { get; private set; }
+    public Port<TestRequestTest> ResponsePort { get; set; }
+  }
+  */
+
+
 }
