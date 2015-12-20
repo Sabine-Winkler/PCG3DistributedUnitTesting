@@ -18,8 +18,10 @@ namespace PCG3.TestFramework {
     public override string ToString() {
        
        string exceptionText = (Exception != null) ? Exception.Message : "null";
-       return String.Format("MethodName={0}, Exception={1}, Failed={2}, Status={3}, Type={4}",
-                             MethodName, exceptionText, Failed, Status, Type.FullName);
+       string messageTemplate = "MethodName={0}, Exception={1}, Failed={2}, Status={3}, Type={4}";
+       
+       return String.Format(messageTemplate,
+                            MethodName, exceptionText, Failed, Status, Type.FullName);
     }
   }
 }
