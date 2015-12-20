@@ -3,7 +3,6 @@ using PCG3.TestFramework;
 using PCG3.Util;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 using XcoAppSpaces.Core;
@@ -14,23 +13,17 @@ namespace PCG3.Client.Logic {
 
     private const string APP_SPACE_CONFIG_STRING = "tcp.port=0";
 
-    //private XcoAppSpace space;
-
     public ClientLogic() {
-      //this.space = new XcoAppSpace(APP_SPACE_CONFIG_STRING);
+      // currently nothing to do
     }
 
-    ~ClientLogic() {
-      //this.space.Dispose();
-    }
-    
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="assemblyPath"></param>
     /// <param name="serverAddresses"></param>
-    public void DeployAssemblyToServer(string assemblyPath, string[] serverAddresses) {
+    public void DeployAssemblyToServers(string assemblyPath, string[] serverAddresses) {
 
       using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
         foreach (string serverAddress in serverAddresses) {
@@ -51,92 +44,85 @@ namespace PCG3.Client.Logic {
       };
     }
 
-    private bool insertInList(List<Test> list, Test insert) {
-      int i=0;
-      while (i < list.Count) {
-        if (list[i].MethodName.Equals(insert.MethodName) && list[i].Type.FullName.Equals(insert.Type.FullName)) {
-          list[i] = insert;
-          return true;
-        }
-        i++;
-      }
-      return false;
-    }
+    
+    public void SendTestsToServers(List<Test> availableTests, string[] serverAddresses) {
 
-
-    public void SendTestsToServer(List<Test> tests, string[] serverAddresses) {
-
-      int index = 0;
+      //int index = 0;
       
-      using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
-        while (index < tests.Count) {
+      //using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
+      //  while (index < tests.Count) {
 
-          foreach (string serverAddress in serverAddresses) {
+      //    foreach (string serverAddress in serverAddresses) {
 
-            try {
-              TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress, string.Format("{0}{1}", serverAddress, index.ToString()) );
+      //      try {
+      //        TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress, string.Format("{0}{1}", serverAddress, index.ToString()) );
 
-              if ( worker.AvailableCores() > 0) {
+      //        if ( worker.AvailableCores() > 0) {
 
-                List<Test> testsToServer = new List<Test>();
-                for(int i=0; i < worker.AvailableCores();i++) {
-                  testsToServer.Add(tests[index]);
-                  index++;
-                }
+      //          List<Test> testsToServer = new List<Test>();
+      //          for(int i=0; i < worker.AvailableCores();i++) {
+      //            testsToServer.Add(tests[index]);
+      //            index++;
+      //          }
 
-                Console.WriteLine("###> worker has core(s) available");
+      //          Console.WriteLine("###> worker has core(s) available");
 
-                TestRequestTest requestTest = new TestRequestTest();
-                requestTest.Tests = testsToServer;
-                requestTest.ResponsePort = space.Receive<TestResponseResult>(response => {
+      //          TestRequestTest requestTest = new TestRequestTest();
+      //          requestTest.Tests = testsToServer;
+      //          requestTest.ResponsePort = space.Receive<TestResponseResult>(response => {
 
-                  foreach (Test result in response.Results) {
-                    Console.WriteLine("###> Testresult: " + result);
-                    insertInList(tests, result);
-                  }
+      //            foreach (Test result in response.Results) {
+      //              Console.WriteLine("###> Testresult: " + result);
+      //              insertInList(tests, result);
+      //            }
 
-                });
+      //          });
 
 
-                worker.Post(requestTest);
+      //          worker.Post(requestTest);
                 
-              }
-              else {
-                Console.WriteLine("###> worker has no core available");
-              }
-            }
-            catch (Exception) {
-              Console.WriteLine("###> There is already an instance of {0}{1}", serverAddress, index.ToString());
+      //        }
+      //        else {
+      //          Console.WriteLine("###> worker has no core available");
+      //        }
+      //      }
+      //      catch (Exception) {
+      //        Console.WriteLine("###> There is already an instance of {0}{1}", serverAddress, index.ToString());
 
-            }
-          }
-        };
-      }
-
-
-      //request.ResponsePort = space.Receive<TestResponse>(resp => {
-      //  Console.WriteLine("###> " + resp.Result);
-      //});
+      //      }
+      //    }
+      //  };
+      //}
 
 
-      //worker.Post(request);
+      ////request.ResponsePort = space.Receive<TestResponse>(resp => {
+      ////  Console.WriteLine("###> " + resp.Result);
+      ////});
 
-      /*foreach (Test t in tests) {
 
-        TestRequest request = new TestRequest();
-        request.Test = t;
-        request.ResponsePort = sp.Receive<TestResponse>(resp => {
-          Console.WriteLine("###> " + resp.Result);
-          Console.WriteLine(resp.Result.MethodInfo.Name);
-        });
+      ////worker.Post(request);
 
-        Console.WriteLine("***> " + t.MethodInfo);
-        worker.Post(request);
-      }
-      }*/
+      ///*foreach (Test t in tests) {
+
+      //  TestRequest request = new TestRequest();
+      //  request.Test = t;
+      //  request.ResponsePort = sp.Receive<TestResponse>(resp => {
+      //    Console.WriteLine("###> " + resp.Result);
+      //    Console.WriteLine(resp.Result.MethodInfo.Name);
+      //  });
+
+      //  Console.WriteLine("***> " + t.MethodInfo);
+      //  worker.Post(request);
+      //}
+      //}*/
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="assemblyPath"></param>
+    /// <returns></returns>
     public List<Test> GetTestMethodsOfAssembly(string assemblyPath) {
 
       List<Test> tests = new List<Test>();

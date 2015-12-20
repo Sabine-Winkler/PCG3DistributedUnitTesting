@@ -153,15 +153,11 @@ namespace PCG3.Client.ViewModel.ViewModel {
         if (startTestsCommand == null) {
           startTestsCommand = new RelayCommand(param => {
             
-           
             // step 1 - deploy assembly to the servers
-            logic.DeployAssemblyToServer(SelectedAssemblyPath, ServerAddressesArray);
-            
-            
+            logic.DeployAssemblyToServers(SelectedAssemblyPath, ServerAddressesArray);
+
             // step 2 - send tests to the servers
-            logic.SendTestsToServer(TestList, ServerAddressesArray);
-
-
+            logic.SendTestsToServers(TestList, ServerAddressesArray);
 
          });
         }

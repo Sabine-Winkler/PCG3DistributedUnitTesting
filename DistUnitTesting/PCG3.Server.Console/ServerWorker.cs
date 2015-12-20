@@ -38,11 +38,11 @@ namespace PCG3.Server {
         Console.WriteLine("####> in Process: " + test.MethodName);
 
 
-        coresInUse++;
+        // coresInUse++;
         TestRunner tr = new TestRunner();
         Test result =  tr.RunTest(test);
         results.Add(result);
-        coresInUse--;
+        // coresInUse--;
 
 
         //Console.WriteLine("######> {0} of {1} available cores in use", coresInUse, Cores);
@@ -54,14 +54,6 @@ namespace PCG3.Server {
       testRequest.ResponsePort.Post(response);
 
     }
-
-    //[XcoConcurrent]
-    //private Test runTest(Test test) {
-    //  TestRunner tr = new TestRunner();
-    //  return tr.RunTest(test);
-    //}
-  
-
   }
 }
   
