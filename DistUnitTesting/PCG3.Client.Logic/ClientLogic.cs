@@ -12,7 +12,7 @@ namespace PCG3.Client.Logic {
   public class ClientLogic {
 
     private const string APP_SPACE_CONFIG_STRING = "tcp.port=0";
-
+ 
     #region message templates
     private const string ASSEMBLY_DEPLOY_FAILED_TEMPLATE
       = "{0}: Failed to deploy the assembly '{1}' on the server {2}. Error: {3}";
