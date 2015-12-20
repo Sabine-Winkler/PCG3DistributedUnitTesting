@@ -1,5 +1,6 @@
 ﻿using PCG3.Middleware;
 using PCG3.TestFramework;
+using PCG3.Util;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -10,15 +11,19 @@ namespace PCG3.Server {
 
   public class ServerAssemblyWorker : AssemblyWorker {
 
+    private const string ASSEMBLY_LOAD_TEMPLATE
+      = "{0}: Assembly got load on server.";
+
     [XcoExclusive]
     public void Process(AssemblyRequest assemblyRequest) {
 
-      var response = new AssemblyResponse();
-    
+      AssemblyResponse response = new AssemblyResponse();
+
       try {
         Assembly.Load(assemblyRequest.Bytes);
         response.Worked = true;
-        Console.WriteLine("Assembly got load on Server.");
+        string message = string.Format(ASSEMBLY_LOAD_TEMPLATE, DateUtil.GetCurrentDateTime());
+        Console.WriteLine(message);
       } catch (Exception e) {
         response.Worked = false;
         response.ErrorMsg = e.ToString();
@@ -30,29 +35,37 @@ namespace PCG3.Server {
 
   public class ServerTestWorker : TestWorker {
 
+    private const string TEST_PROCESS_TEMPLATE
+      = "{0}: [Processing] {1} {2}()";
+    private const string TEST_RESULT_TEMPLATE
+      = "{0}: [Result]{1}{2}{3}";
+
     [XcoExclusive]
     public void Process(TestRequestTest testRequest) {
-      var response = new TestResponseResult();
-      List<Test> results = new List<Test>();
-      Parallel.ForEach(testRequest.Tests, test => {
-        Console.WriteLine("####> in Process: " + test.MethodName);
 
+      TestResponseResult response = new TestResponseResult();
+
+      List<Test> results = new List<Test>();
+
+      Parallel.ForEach(testRequest.Tests, test => {
+
+        string message = string.Format(TEST_PROCESS_TEMPLATE, DateUtil.GetCurrentDateTime(),
+                                       test.Type.FullName, test.MethodName);
+        Console.WriteLine(message);
 
         // coresInUse++;
         TestRunner tr = new TestRunner();
-        Test result =  tr.RunTest(test);
+        Test result = tr.RunTest(test);
         results.Add(result);
         // coresInUse--;
 
-
-        //Console.WriteLine("######> {0} of {1} available cores in use", coresInUse, Cores);
-        Console.WriteLine("###> Result: " + result);
-
-
+        message = string.Format(TEST_RESULT_TEMPLATE, DateUtil.GetCurrentDateTime(),
+                                Environment.NewLine, result, Environment.NewLine);
+        Console.WriteLine(message);
       });
+
       response.Results = results;
       testRequest.ResponsePort.Post(response);
-
     }
   }
 }

@@ -13,6 +13,20 @@ namespace PCG3.Client.Logic {
 
     private const string APP_SPACE_CONFIG_STRING = "tcp.port=0";
 
+    #region message templates
+    private const string ASSEMBLY_DEPLOY_FAILED_TEMPLATE
+      = "{0}: Failed to deploy the assembly '{1}' on the server {2}. Error: {3}";
+    private const string ASSEMBLY_DEPLOY_SUCCEED_TEMPLATE
+      = "{0}: Successfully deployed the assembly '{1}' on the server {2}.";
+    private const string AVAILABLE_CORES_TEMPLATE
+      = "{0}: The server {1} has {2} available cores.";
+    private const string TEST_RESULT_TEMPLATE
+      = "{0}: [Result]{1}{2}{3}";
+    private const string ERROR_TEMPLATE
+      = "{0}: [ERROR] An error occurred: {1}";
+    #endregion
+
+
     public ClientLogic() {
       // currently nothing to do
     }
@@ -26,17 +40,33 @@ namespace PCG3.Client.Logic {
     public void DeployAssemblyToServers(string assemblyPath, string[] serverAddresses) {
 
       using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
+
+        int i = 0;
+
         foreach (string serverAddress in serverAddresses) {
-          AssemblyWorker serverWorker = space.ConnectWorker<AssemblyWorker>(serverAddress);
+
+          AssemblyWorker serverWorker
+            = space.ConnectWorker<AssemblyWorker>(serverAddress, serverAddress + "/" + i);
+
+          i++;
+
           AssemblyRequest deployAssemblyRequest = new AssemblyRequest();
+
           deployAssemblyRequest.Bytes = File.ReadAllBytes(assemblyPath);
+
           deployAssemblyRequest.ResponsePort = space.Receive<AssemblyResponse>(resp => {
+            string message = "";
             if (!resp.Worked) {
-              Console.WriteLine("###> " + resp.ErrorMsg);
+              message = string.Format(ASSEMBLY_DEPLOY_FAILED_TEMPLATE,
+                                      DateUtil.GetCurrentDateTime(),
+                                      assemblyPath, serverAddress, resp.ErrorMsg);
+
+            } else {
+              message = string.Format(ASSEMBLY_DEPLOY_SUCCEED_TEMPLATE,
+                                      DateUtil.GetCurrentDateTime(),
+                                      assemblyPath, serverAddress);
             }
-            else {
-              Console.WriteLine("###> Deployment of Assembly worked");
-            }
+            Console.WriteLine(message);
           });
 
           serverWorker.Post(deployAssemblyRequest);
@@ -47,6 +77,12 @@ namespace PCG3.Client.Logic {
 
     public delegate void TestCompletedCallback(Test test);
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="availableTests"></param>
+    /// <param name="serverAddresses"></param>
+    /// <param name="callback"></param>
     public void SendTestsToServers(List<Test> availableTests, string[] serverAddresses,
                                    TestCompletedCallback callback) {
 

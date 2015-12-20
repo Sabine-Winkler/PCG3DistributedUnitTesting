@@ -67,6 +67,10 @@
       <Project>{2d40d432-e19c-4dde-ab56-be35574f4fef}</Project>
       <Name>PCG3.TestFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PCG3.Util\PCG3.Util.csproj">
+      <Project>{6b83b0f0-259a-40bb-816b-5669b14e3013}</Project>
+      <Name>PCG3.Util</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
