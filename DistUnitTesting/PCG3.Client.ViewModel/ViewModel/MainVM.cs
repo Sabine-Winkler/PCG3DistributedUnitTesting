@@ -157,7 +157,20 @@ namespace PCG3.Client.ViewModel.ViewModel {
             logic.DeployAssemblyToServers(SelectedAssemblyPath, ServerAddressesArray);
 
             // step 2 - send tests to the servers
-            logic.SendTestsToServers(TestList, ServerAddressesArray);
+            logic.SendTestsToServers(TestList, ServerAddressesArray, (updatedTest) => {
+
+              for (int i = 0; i < TestColl.Count; ++i) {
+                Test currTest = TestColl[i];
+                if (currTest.MethodName.Equals(updatedTest.MethodName)
+                      && currTest.Type.Equals(updatedTest.Type)) {
+                  TestColl.RemoveAt(i);
+                  TestColl.Insert(i, updatedTest);
+                  break;
+                }
+              }
+            });
+
+            Console.WriteLine("Send tests to servers.");
 
          });
         }

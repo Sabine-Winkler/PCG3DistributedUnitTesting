@@ -44,8 +44,17 @@ namespace PCG3.Client.Logic {
       };
     }
 
-    
-    public void SendTestsToServers(List<Test> availableTests, string[] serverAddresses) {
+
+    public delegate void TestCompletedCallback(Test test);
+
+    public void SendTestsToServers(List<Test> availableTests, string[] serverAddresses,
+                                   TestCompletedCallback callback) {
+
+      // set the status of each test to Waiting...
+      foreach (Test test in availableTests) {
+        test.Status = TestStatus.WAITING;
+        callback(test);
+      }
 
       //int index = 0;
       
