@@ -1,5 +1,8 @@
 ﻿namespace PCG3.TestFramework {
 
+  /// <summary>
+  /// Status of a test.
+  /// </summary>
   public static class TestStatus {
 
     /// <summary>
@@ -18,7 +21,7 @@
     public const string PASSED  = "Passed";
 
     /// <summary>
-    /// The test was sent to a server and it is waiting for the result now.
+    /// The test was sent to a server and the client is waiting for the result now.
     /// </summary>
     public const string WAITING = "Waiting...";
   }
