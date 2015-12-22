@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using XcoAppSpaces.Core;
 
 namespace PCG3.Client.Logic {
@@ -19,7 +20,7 @@ namespace PCG3.Client.Logic {
     private const string ASSEMBLY_DEPLOY_SUCCEED_TEMPLATE
       = "{0}: Successfully deployed the assembly '{1}' on the server {2}.";
     private const string AVAILABLE_CORES_TEMPLATE
-      = "{0}: The server {1} has {2} available cores.";
+      = "{0}: The server {1} ({2}) has {3} available cores.";
     private const string TEST_RESULT_TEMPLATE
       = "{0}: [Result]{1}{2}{3}";
     private const string ERROR_TEMPLATE
@@ -33,133 +34,168 @@ namespace PCG3.Client.Logic {
 
 
     /// <summary>
-    /// 
+    /// Serializes the assembly with the given assemblyPath and
+    /// sends the serialized assembly to a set of servers.
     /// </summary>
-    /// <param name="assemblyPath"></param>
-    /// <param name="serverAddresses"></param>
+    /// <param name="assemblyPath">relative or absolute path to an assembly (.dll, .exe)</param>
+    /// <param name="serverAddresses">array of server address in the form host:port</param>
     public void DeployAssemblyToServers(string assemblyPath, string[] serverAddresses) {
 
       using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
 
-        int i = 0;
+        CountdownEvent countdown = new CountdownEvent(serverAddresses.Length);
 
-        foreach (string serverAddress in serverAddresses) {
+        for (int i = 0; i < serverAddresses.Length; ++i) {
 
-          AssemblyWorker serverWorker
-            = space.ConnectWorker<AssemblyWorker>(serverAddress, serverAddress + "/" + i);
+          string addr = serverAddresses[i];
+          string localName = addr + "/" + i;
+          AssemblyWorker worker = space.ConnectWorker<AssemblyWorker>(addr, localName);
 
-          i++;
-
-          AssemblyRequest deployAssemblyRequest = new AssemblyRequest();
-
-          deployAssemblyRequest.Bytes = File.ReadAllBytes(assemblyPath);
-
-          deployAssemblyRequest.ResponsePort = space.Receive<AssemblyResponse>(resp => {
+          AssemblyRequest request = new AssemblyRequest();
+          request.Bytes = File.ReadAllBytes(assemblyPath);
+          request.ResponsePort = space.Receive<AssemblyResponse>(resp => {
+            
             string message = "";
             if (!resp.Worked) {
               message = string.Format(ASSEMBLY_DEPLOY_FAILED_TEMPLATE,
                                       DateUtil.GetCurrentDateTime(),
-                                      assemblyPath, serverAddress, resp.ErrorMsg);
+                                      assemblyPath, addr, resp.ErrorMsg);
 
             } else {
               message = string.Format(ASSEMBLY_DEPLOY_SUCCEED_TEMPLATE,
                                       DateUtil.GetCurrentDateTime(),
-                                      assemblyPath, serverAddress);
+                                      assemblyPath, addr);
             }
             Console.WriteLine(message);
+            countdown.Signal();
           });
 
-          serverWorker.Post(deployAssemblyRequest);
+          worker.Post(request);
         }
+
+        countdown.Wait();
       };
+
     }
 
 
-    public delegate void TestCompletedCallback(Test test);
+    public delegate void OnTestCompleted(Test test);
 
     /// <summary>
-    /// 
+    /// Distributes a list of tests to an array of servers.
+    /// If a test was executed by a server and the result is returned,
+    /// the client's view model is notified by the given callback.
     /// </summary>
-    /// <param name="availableTests"></param>
-    /// <param name="serverAddresses"></param>
-    /// <param name="callback"></param>
+    /// <param name="tests">tests to distribute</param>
+    /// <param name="serverAddresses">array of server addresses in the form host:port</param>
     public void SendTestsToServers(List<Test> availableTests, string[] serverAddresses,
-                                   TestCompletedCallback callback) {
+                                   OnTestCompleted callback) {
 
-      // set the status of each test to Waiting...
+      int serverCount = serverAddresses.Length;
+      int testCount   = availableTests.Count;
+      TestWorker[] testWorkers = new TestWorker[serverCount];
+      
+      // step 1 - set the status of each test to Waiting...
       foreach (Test test in availableTests) {
         test.Status = TestStatus.WAITING;
         callback(test);
       }
-
-      //int index = 0;
       
-      //using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
-      //  while (index < tests.Count) {
+      using (XcoAppSpace space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
+        
 
-      //    foreach (string serverAddress in serverAddresses) {
+        // step 2 - connect to each server and create a worker per server
+        for (int i = 0; i < serverCount; ++i) {
+          string addr = serverAddresses[i];
+          string localName = addr + "/" + i;
+          testWorkers[i] = space.ConnectWorker<TestWorker>(addr, localName);
+          testWorkers[i].ServerId = i;
+          testWorkers[i].ServerAddress = addr;
+          testWorkers[i].LocalName = localName;
+        }
 
-      //      try {
-      //        TestWorker worker = space.ConnectWorker<TestWorker>(serverAddress, string.Format("{0}{1}", serverAddress, index.ToString()) );
+        CountdownEvent testsCd = new CountdownEvent(testCount);
+        Object lockObj = new Object();
 
-      //        if ( worker.AvailableCores() > 0) {
+        // step 3 - distribute tests to the servers
+        int freeTestsCount = testCount;
+        int testNo = 0;
 
-      //          List<Test> testsToServer = new List<Test>();
-      //          for(int i=0; i < worker.AvailableCores();i++) {
-      //            testsToServer.Add(tests[index]);
-      //            index++;
-      //          }
+        while (freeTestsCount > 0) {
 
-      //          Console.WriteLine("###> worker has core(s) available");
+          Console.WriteLine("Client: Sleep 1 sec.");
+          Thread.Sleep(1000);
 
-      //          TestRequestTest requestTest = new TestRequestTest();
-      //          requestTest.Tests = testsToServer;
-      //          requestTest.ResponsePort = space.Receive<TestResponseResult>(response => {
+          foreach (TestWorker worker in testWorkers) {
 
-      //            foreach (Test result in response.Results) {
-      //              Console.WriteLine("###> Testresult: " + result);
-      //              insertInList(tests, result);
-      //            }
+            CountdownEvent allocCd = new CountdownEvent(1);
+               
+            AllocCoresRequest allocReq = new AllocCoresRequest();
+            allocReq.ServerId      = worker.ServerId;
+            allocReq.ServerAddress = worker.ServerAddress;
+            allocReq.TestCount     = freeTestsCount;
 
-      //          });
+            #region alloc response
+            allocReq.ResponsePort  = space.Receive<AllocCoresResponse>(allocResp => {
+              
+              int cores = allocResp.AllocCores;
 
+              Console.WriteLine("Client: Server: " + allocReq.ServerAddress + ", Allocated: " + cores);
+              freeTestsCount -= cores;
 
-      //          worker.Post(requestTest);
-                
-      //        }
-      //        else {
-      //          Console.WriteLine("###> worker has no core available");
-      //        }
-      //      }
-      //      catch (Exception) {
-      //        Console.WriteLine("###> There is already an instance of {0}{1}", serverAddress, index.ToString());
+              allocCd.Signal();
 
-      //      }
-      //    }
-      //  };
-      //}
+              if (cores > 0) {
+                List<Test> assignedTests = new List<Test>();
+                for (int j = 0; j < cores; ++j) {
+                  assignedTests.Add(availableTests[testNo]);
+                  testNo++;
+                }
 
+                RunTestsRequest runReq = new RunTestsRequest();
+                runReq.ServerId = allocReq.ServerId;
+                runReq.ServerAddress = allocReq.ServerAddress;
+                runReq.Tests = assignedTests;
 
-      ////request.ResponsePort = space.Receive<TestResponse>(resp => {
-      ////  Console.WriteLine("###> " + resp.Result);
-      ////});
+                #region run response
+                runReq.ResponsePort = space.Receive<RunTestsResponse>(runResp => {
+                  Console.WriteLine("Client: " + runResp.Result);
+                  lock (lockObj) {
+                    callback(runResp.Result);
+                  }
+                  
+                  CountdownEvent freeCd = new CountdownEvent(1);
+                  FreeCoreRequest freeReq = new FreeCoreRequest();
 
+                  #region free response
+                  freeReq.ResponsePort = space.Receive<FreeCoreResponse>(freeResp => {
+                    Console.WriteLine("Client: Free core.");
+                    testsCd.Signal();
+                    Console.WriteLine("Client: " + testsCd.CurrentCount + " tests are not completed yet.");
+                  });
+                  #endregion free response
 
-      ////worker.Post(request);
+                  testWorkers[runReq.ServerId].Post(freeReq);
+                  Console.WriteLine("Client: Try to free core.");
 
-      ///*foreach (Test t in tests) {
+                });
+                #endregion run response
 
-      //  TestRequest request = new TestRequest();
-      //  request.Test = t;
-      //  request.ResponsePort = sp.Receive<TestResponse>(resp => {
-      //    Console.WriteLine("###> " + resp.Result);
-      //    Console.WriteLine(resp.Result.MethodInfo.Name);
-      //  });
+                testWorkers[allocReq.ServerId].Post(runReq);
+              }
 
-      //  Console.WriteLine("***> " + t.MethodInfo);
-      //  worker.Post(request);
-      //}
-      //}*/
+            });
+            #endregion alloc response
+
+            testWorkers[allocReq.ServerId].Post(allocReq);
+            allocCd.Wait();
+
+          } // foreach worker
+
+        } // while enough tests
+
+        testsCd.Wait();
+      }
     }
 
 

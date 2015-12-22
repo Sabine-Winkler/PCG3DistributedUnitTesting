@@ -11,10 +11,20 @@ namespace PCG3.TestFramework {
   /// </summary>
   public class TestRunner {
 
+    private const string TEST_PASSED = "Test passed.";
+    private const string TEST_FAILED = "Test failed.";
+
     public TestRunner() {
       // currently nothing to do
     }
 
+
+    /// <summary>
+    /// Runs a test method and returns it afterwards.
+    /// The class of the test method is instantiated.
+    /// </summary>
+    /// <param name="test">test to execute</param>
+    /// <returns>updated test</returns>
     public Test RunTest(Test test) {
 
       object testClass = test.Type.Assembly.CreateInstance(test.Type.FullName);
@@ -33,8 +43,17 @@ namespace PCG3.TestFramework {
       return null;
     }
 
-    public Test RunTest(Test test, object testClass,
-                        ExpectedExceptionAttribute expectedExceptionAttribute) {
+
+    /// <summary>
+    /// Runs a test and returns it afterwards.
+    /// </summary>
+    /// <param name="test">test to execute</param>
+    /// <param name="testClass">instantiated class of the given test method</param>
+    /// <param name="expectedExceptionAttribute">[ExpectedException] attribute,
+    /// or null, if the given test method does not have this attribute</param>
+    /// <returns>updated test</returns>
+    private Test RunTest(Test test, object testClass,
+                         ExpectedExceptionAttribute expectedExceptionAttribute) {
 
       Stopwatch watch = new Stopwatch();
 
@@ -47,14 +66,15 @@ namespace PCG3.TestFramework {
         if (expectedExceptionAttribute != null) {
           // an exception was expected, but not thrown
           // -> test failed
-          test.Exception = new NoExceptionThrownException(expectedExceptionAttribute.Type);
-          test.Failed = true;
-          test.Status = TestStatus.FAILED;
+          test.Message = new NoExceptionThrownException(expectedExceptionAttribute.Type).Message;
+          test.Failed  = true;
+          test.Status  = TestStatus.FAILED;
         } else {
           // everything is ok
           // -> test passed
-          test.Failed = false;
-          test.Status = TestStatus.PASSED;
+          test.Message = TEST_PASSED;
+          test.Failed  = false;
+          test.Status  = TestStatus.PASSED;
         }
       } catch (Exception e) {
 
@@ -76,14 +96,15 @@ namespace PCG3.TestFramework {
 
             // ExceptedException was thrown
             // -> test passed
-            test.Failed = false;
-            test.Status = TestStatus.PASSED;
+            test.Message = TEST_PASSED;
+            test.Failed  = false;
+            test.Status  = TestStatus.PASSED;
           } else {
 
             // another exception than the expected one was thrown
             // -> test failed
-            test.Exception = new ExpectedExceptionNotThrownException(
-              expectedExceptionType, resultException);
+            test.Message = new ExpectedExceptionNotThrownException(
+              expectedExceptionType, resultException).Message;
             test.Failed = true;
             test.Status = TestStatus.FAILED;
           }
@@ -91,9 +112,9 @@ namespace PCG3.TestFramework {
 
           // an unexpected exception or AssertionFailedException was thrown
           // -> test failed
-          test.Exception = resultException;
-          test.Failed = true;
-          test.Status = TestStatus.FAILED;
+          test.Message = resultException.Message;
+          test.Failed  = true;
+          test.Status  = TestStatus.FAILED;
         }
 
       } finally {
@@ -102,12 +123,13 @@ namespace PCG3.TestFramework {
       return test;
     }
 
+
     /// <summary>
     /// Executes methods marked with [Test] contained in the given, already loaded assembly.
     /// </summary>
     /// <param name="assembly">loaded assembly</param>
     /// <returns>list of test results; one result per test method</returns>
-    public List<Test> RunTests(Assembly assembly) {
+    private List<Test> RunTests(Assembly assembly) {
 
       List<Test> tests = new List<Test>();
 
@@ -137,15 +159,23 @@ namespace PCG3.TestFramework {
       }
 
       return tests;
-
     }
 
+
+    /// <summary>
+    /// Main method to test the TestRunner.
+    /// </summary>
+    /// <param name="args"></param>
     public static void Main(string[] args) {
 
       TestRunner runner = new TestRunner();
+
+      // TODO: remove the following path
       string assemblyName = @"C:\SABINE\Master\3_WS_15_16\PCG3\Teil2-Scheller\UE-Dist-Unittesting\PCG3DistributedUnitTesting\DistUnitTesting\PCG3.TestUnitTests\bin\Debug\PCG3.TestUnitTests.dll";
+      
       Assembly assembly = Assembly.LoadFrom(assemblyName);
       List<Test> tests = runner.RunTests(assembly);
+      
       Console.WriteLine(tests);
     }
   }

@@ -61,7 +61,7 @@
             <DataGridTextColumn Header="Method"      Width="15*" Binding="{Binding Path=MethodName, Mode=OneWay}" />
             <DataGridTextColumn Header="Status"      Width="10*" Binding="{Binding Path=Status, Mode=OneWay}" />
             <DataGridTextColumn Header="ElapsedTime" Width="10*" Binding="{Binding Path=ElapsedTime, Mode=OneWay}" />
-            <DataGridTextColumn Header="Result"      Width="40*" Binding="{Binding Path=Exception, Mode=OneWay}" />
+            <DataGridTextColumn Header="Result"      Width="40*" Binding="{Binding Path=Message, Mode=OneWay}" />
           </DataGrid.Columns>
       </DataGrid>
     </Grid>
