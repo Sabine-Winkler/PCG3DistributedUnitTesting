@@ -7,10 +7,13 @@ namespace PCG3.Client.GUI {
   public partial class MainWindow : Window {
 
     public MainWindow() {
+      
       InitializeComponent();
+      
+      #region check program arguments
       string[] args = Environment.GetCommandLineArgs();
 
-      string assembly = "";
+      string assembly        = "";
       string serverAddresses = "";
 
       if (args.Length > 1) {
@@ -22,8 +25,9 @@ namespace PCG3.Client.GUI {
           serverAddresses += args[i] + Environment.NewLine;
         }
       }
+      #endregion
 
-      DataContext = new MainVM(assembly, serverAddresses);
+      DataContext = new MainVM(assembly, serverAddresses, this.Dispatcher);
     }
   }
 

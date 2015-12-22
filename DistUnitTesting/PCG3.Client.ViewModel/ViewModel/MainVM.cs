@@ -1,24 +1,42 @@
 ﻿using Microsoft.Win32;
 using PCG3.Client.Logic;
 using PCG3.TestFramework;
+using PCG3.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 namespace PCG3.Client.ViewModel.ViewModel {
 
+  /// <summary>
+  /// Main view model of the client application.
+  /// Binds data to the GUI, updates the GUI, and
+  /// calls the client's logic.
+  /// </summary>
   public class MainVM : ViewModelBase<MainVM> {
+
+    private const string SEND_TESTS_TEMPLATE   = "{0}: Sent tests to servers.";
+    private const string UPDATED_TEST_TEMPLATE = "{0}: Updated test {1}, {2}().";
 
     private string selectedAssemblyPath;
     private string serverAddresses;
     private bool validServerAddresses;
     private bool validAssemblyPath;
-    private bool validServersAndAssembly; // for 'Start' button
+
+    // to control if the 'Start' button is enabled/disabled
+    private bool validServersAndAssembly;
+    private Boolean TestsInProgress { get; set; }
+
     private ObservableCollection<Test> testColl;
     private ClientLogic logic;
 
-    public MainVM(string assembly, string serverAddresses) {
+    public Dispatcher GuiThreadDispatcher { get; set; }
+
+
+    public MainVM(string assembly, string serverAddresses, Dispatcher dispatcher) {
       logic = new ClientLogic();
 
       if (assembly != "") {
@@ -28,7 +46,11 @@ namespace PCG3.Client.ViewModel.ViewModel {
       if (serverAddresses != "") {
         ServerAddresses = serverAddresses;
       }
+
+      TestsInProgress = false;
+      GuiThreadDispatcher = dispatcher;
     }
+
 
     public string SelectedAssemblyPath {
       
@@ -46,6 +68,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
 
     }
 
+
     public string ServerAddresses {
 
       get { return serverAddresses; }
@@ -60,6 +83,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
       }
     }
 
+
     /// <summary>
     /// Splits a list of server addresses at every newline, removes empty entries,
     /// and returns the server addresses as array.
@@ -73,7 +97,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
              );
     }
 
+
     public string[] ServerAddressesArray { get; private set; }
+
 
     public bool ValidServerAddresses {
       get { return validServerAddresses; }
@@ -81,23 +107,29 @@ namespace PCG3.Client.ViewModel.ViewModel {
       set {
         if (validServerAddresses != value) {
           validServerAddresses = value;
-          ValidServersAndAssembly = ValidServerAddresses && ValidAssemblyPath;
+          UpdateStartButton();
           RaisePropertyChangedEvent(vm => vm.validServerAddresses);
         }
       }
     }
-    
+
+
+    public void UpdateStartButton() {
+      ValidServersAndAssembly = ValidServerAddresses && ValidAssemblyPath && !TestsInProgress;
+    }
+
     public bool ValidAssemblyPath {
       get { return validAssemblyPath; }
 
       set {
         if (validAssemblyPath != value) {
           validAssemblyPath = value;
-          ValidServersAndAssembly = ValidServerAddresses && ValidAssemblyPath;
+          UpdateStartButton();
           RaisePropertyChangedEvent(vm => vm.validAssemblyPath);
         }
       }
     }
+
 
     public bool ValidServersAndAssembly {
       get { return validServersAndAssembly; }
@@ -110,7 +142,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
       }
     }
 
+
     private List<Test> TestList { get; set; }
+
 
     public ObservableCollection<Test> TestColl {
       get { return testColl; }
@@ -122,6 +156,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
         }
       }
     }
+
 
     private ICommand selectAssemblyCommand;
     public ICommand SelectAssemblyCommand {
@@ -135,8 +170,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
             OpenFileDialog openFileDialog
               = new OpenFileDialog() { Filter = filter, Multiselect = false };
 
-            bool? result = openFileDialog.ShowDialog();
-            if (result == true) {
+            if (openFileDialog.ShowDialog() == true) {
               SelectedAssemblyPath = openFileDialog.FileName;              
             }
           });
@@ -146,6 +180,32 @@ namespace PCG3.Client.ViewModel.ViewModel {
 
     }
 
+    private void UpdateTests(Test updTest) {
+      
+      string updTestMethodName = updTest.MethodName;
+      Type updTestType = updTest.Type;
+
+      for (int i = 0; i < TestColl.Count; ++i) {
+        
+        Test currTest = TestColl[i];
+
+        if (currTest.MethodName.Equals(updTestMethodName)
+              && currTest.Type.Equals(updTestType)) {
+          
+          GuiThreadDispatcher.Invoke(() => {
+            TestColl.RemoveAt(i);
+            TestColl.Insert(i, updTest);
+          });
+          
+          string message = string.Format(UPDATED_TEST_TEMPLATE, DateUtil.GetCurrentDateTime(),
+                                         updTestType.FullName, updTestMethodName);
+          Console.WriteLine(message);
+          
+          break;
+        }
+      }
+    }
+
     private ICommand startTestsCommand;
     public ICommand StartTestsCommand {
       
@@ -153,25 +213,27 @@ namespace PCG3.Client.ViewModel.ViewModel {
         if (startTestsCommand == null) {
           startTestsCommand = new RelayCommand(param => {
             
-            // step 1 - deploy assembly to the servers
-            logic.DeployAssemblyToServers(SelectedAssemblyPath, ServerAddressesArray);
+            // disable 'Start' button
+            TestsInProgress = true;
+            UpdateStartButton();
 
-            // step 2 - send tests to the servers
-            logic.SendTestsToServers(TestList, ServerAddressesArray, (updatedTest) => {
+            Task.Run(() => {
 
-              for (int i = 0; i < TestColl.Count; ++i) {
-                Test currTest = TestColl[i];
-                if (currTest.MethodName.Equals(updatedTest.MethodName)
-                      && currTest.Type.Equals(updatedTest.Type)) {
-                  TestColl.RemoveAt(i);
-                  TestColl.Insert(i, updatedTest);
-                  break;
-                }
-              }
-            });
+              // step 1 - deploy assembly to the servers
+              logic.DeployAssemblyToServers(SelectedAssemblyPath, ServerAddressesArray);
 
-            Console.WriteLine("Send tests to servers.");
+              // step 2 - send tests to the servers
+              logic.SendTestsToServers(TestList, ServerAddressesArray, UpdateTests);
 
+              string message = string.Format(SEND_TESTS_TEMPLATE, DateUtil.GetCurrentDateTime());
+              Console.WriteLine(message);
+
+            }).ContinueWith((t) => {
+
+              // enable 'Start' button, if possible
+              TestsInProgress = false;
+              UpdateStartButton();
+            } );
          });
         }
         return startTestsCommand;
