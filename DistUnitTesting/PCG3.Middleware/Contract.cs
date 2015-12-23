@@ -12,7 +12,8 @@ namespace PCG3.Middleware {
 
   [Serializable]
   public class AssemblyRequest{
-    public byte[] Bytes { get; set; }
+    public string AssemblyPath { get; set; }
+    public byte[] AssemblyByteStream { get; set; }
     public Port<AssemblyResponse> ResponsePort { get; set; }
   }
 

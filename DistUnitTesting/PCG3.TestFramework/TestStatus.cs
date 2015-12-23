@@ -23,6 +23,6 @@
     /// <summary>
     /// The test was sent to a server and the client is waiting for the result now.
     /// </summary>
-    public const string WAITING = "Waiting...";
+    public const string IN_PROGRESS = "In Progress";
   }
 }

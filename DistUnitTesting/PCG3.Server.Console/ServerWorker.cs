@@ -14,8 +14,10 @@ namespace PCG3.Server {
   /// </summary>
   public class ServerAssemblyWorker : AssemblyWorker {
 
-    private const string ASSEMBLY_LOAD_TEMPLATE
-      = "{0}: Assembly got load on server.";
+    #region message templates
+    private const string TEMPLATE_LOAD_ASSEMBLY
+      = "[Server/AssWo] Assembly '{0}' got load on server.";
+    #endregion
 
     [XcoExclusive]
     public void Process(AssemblyRequest req) {
@@ -23,10 +25,9 @@ namespace PCG3.Server {
       AssemblyResponse resp = new AssemblyResponse();
 
       try {
-        Assembly.Load(req.Bytes);
+        Assembly.Load(req.AssemblyByteStream);
         resp.Worked = true;
-        string message = string.Format(ASSEMBLY_LOAD_TEMPLATE, DateUtil.GetCurrentDateTime());
-        Console.WriteLine(message);
+        Logger.Log(string.Format(TEMPLATE_LOAD_ASSEMBLY, req.AssemblyPath));
       } catch (Exception e) {
         resp.Worked = false;
         resp.ErrorMsg = e.ToString();
@@ -42,10 +43,18 @@ namespace PCG3.Server {
   /// </summary>
   public class ServerTestWorker : TestWorker {
 
-    private const string TEST_PROCESS_TEMPLATE
-      = "{0}: [Processing] {1} {2}()";
-    private const string TEST_RESULT_TEMPLATE
-      = "{0}: [Result]{1}{2}{3}";
+    #region message templates
+    private const string TEMPLATE_TEST_RESULT
+      = "[Server/TstWo] [Result]\n{0}\n";
+    private const string TEMPLATE_AVAILABLE_TESTS
+      = "[Server/TstWo] {0} tests available.";
+    private const string TEMPLATE_FREE_CORE_REQUEST
+      = "[Server/TstWo] Free core request.";
+    private const string TEMPLATE_RUN_TESTS
+      = "[Server/TstWo] Run tests.";
+    private const string TEMPLATE_RUN_TEST
+      = "[Server/TstWo] Run test ...";
+    #endregion
 
     // XcoPublisher automatically manages incoming subscriptions
     private readonly XcoPublisher<AllocCoresRequest> allocCoresPublisher
@@ -55,13 +64,13 @@ namespace PCG3.Server {
 
     [XcoExclusive]
     public void Process(AllocCoresRequest req) {
-      Console.WriteLine("Process: Allocate cores for " + req.TestCount + " tests maximally.");
+      Logger.Log(string.Format(TEMPLATE_AVAILABLE_TESTS, req.TestCount));
       allocCoresPublisher.Publish(req);
     }
 
     [XcoExclusive]
     public void Process(FreeCoreRequest req) {
-      Console.WriteLine("Process: Free core.");
+      Logger.Log(TEMPLATE_FREE_CORE_REQUEST);
       freeCorePublisher.Publish(req);
     }
 
@@ -69,15 +78,16 @@ namespace PCG3.Server {
     [XcoExclusive]
     public void Process(RunTestsRequest req) {
 
-      Console.WriteLine("Process: Run tests.");
+      Logger.Log(TEMPLATE_RUN_TESTS);
+      TestRunner testRunner = new TestRunner();
 
       foreach (Test test in req.Tests) {
         
         Task.Run(() => {
           RunTestsResponse resp = new RunTestsResponse();
-          Console.WriteLine("Process: Running test ...");
-          resp.Result = new TestRunner().RunTest(test);
-          Console.WriteLine("Process: Finished test.");
+          Logger.Log(TEMPLATE_RUN_TEST);
+          resp.Result = testRunner.RunTest(test);
+          Logger.Log(string.Format(TEMPLATE_TEST_RESULT, resp.Result));
           req.ResponsePort.Post(resp);
         });
       }

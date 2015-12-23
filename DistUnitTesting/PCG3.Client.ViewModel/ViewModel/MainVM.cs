@@ -18,8 +18,10 @@ namespace PCG3.Client.ViewModel.ViewModel {
   /// </summary>
   public class MainVM : ViewModelBase<MainVM> {
 
-    private const string SEND_TESTS_TEMPLATE   = "{0}: Sent tests to servers.";
-    private const string UPDATED_TEST_TEMPLATE = "{0}: Updated test {1}, {2}().";
+    #region message templates
+    private const string TEMPLATE_DISTRIBUTED_TESTS = "[Client/MaiVM] Distributed tests to servers.";
+    private const string TEMPLATE_UPDATED_TEST      = "[Client/MaiVM] Updated test {0}";
+    #endregion
 
     private string selectedAssemblyPath;
     private string serverAddresses;
@@ -180,7 +182,7 @@ namespace PCG3.Client.ViewModel.ViewModel {
 
     }
 
-    private void UpdateTests(Test updTest) {
+    private void OnTestCompleted(Test updTest) {
       
       string updTestMethodName = updTest.MethodName;
       Type updTestType = updTest.Type;
@@ -193,13 +195,13 @@ namespace PCG3.Client.ViewModel.ViewModel {
               && currTest.Type.Equals(updTestType)) {
           
           GuiThreadDispatcher.Invoke(() => {
+            // update the observable collection of tests on the GUI thread
             TestColl.RemoveAt(i);
             TestColl.Insert(i, updTest);
           });
           
-          string message = string.Format(UPDATED_TEST_TEMPLATE, DateUtil.GetCurrentDateTime(),
-                                         updTestType.FullName, updTestMethodName);
-          Console.WriteLine(message);
+          string message = string.Format(TEMPLATE_UPDATED_TEST, updTest);
+          Logger.Log(message);
           
           break;
         }
@@ -222,18 +224,17 @@ namespace PCG3.Client.ViewModel.ViewModel {
               // step 1 - deploy assembly to the servers
               logic.DeployAssemblyToServers(SelectedAssemblyPath, ServerAddressesArray);
 
-              // step 2 - send tests to the servers
-              logic.SendTestsToServers(TestList, ServerAddressesArray, UpdateTests);
+              // step 2 - distribute tests to the servers
+              logic.DistributeTestsToServers(TestList, ServerAddressesArray, OnTestCompleted);
 
-              string message = string.Format(SEND_TESTS_TEMPLATE, DateUtil.GetCurrentDateTime());
-              Console.WriteLine(message);
+              Logger.Log(TEMPLATE_DISTRIBUTED_TESTS);
 
             }).ContinueWith((t) => {
 
               // enable 'Start' button, if possible
               TestsInProgress = false;
               UpdateStartButton();
-            } );
+            });
          });
         }
         return startTestsCommand;

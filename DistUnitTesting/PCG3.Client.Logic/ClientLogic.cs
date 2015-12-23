@@ -10,22 +10,37 @@ using XcoAppSpaces.Core;
 
 namespace PCG3.Client.Logic {
 
+  /// <summary>
+  /// Logic of the clients.
+  /// Extracts tests from an assembly, deploys the assembly to the servers,
+  /// and distributes the tests to the servers using a three step approach
+  /// (allocate, run, free) and a publish-subscribe mechanism.
+  /// </summary>
   public class ClientLogic {
 
     private const string APP_SPACE_CONFIG_STRING = "tcp.port=0";
  
     #region message templates
-    private const string ASSEMBLY_DEPLOY_FAILED_TEMPLATE
-      = "{0}: Failed to deploy the assembly '{1}' on the server {2}. Error: {3}";
-    private const string ASSEMBLY_DEPLOY_SUCCEED_TEMPLATE
-      = "{0}: Successfully deployed the assembly '{1}' on the server {2}.";
-    private const string AVAILABLE_CORES_TEMPLATE
-      = "{0}: The server {1} ({2}) has {3} available cores.";
-    private const string TEST_RESULT_TEMPLATE
-      = "{0}: [Result]{1}{2}{3}";
-    private const string ERROR_TEMPLATE
-      = "{0}: [ERROR] An error occurred: {1}";
+    private const string TEMPLATE_ASSEMBLY_DEPLOY_FAILED
+      = "[Client/Logic] Failed to deploy the assembly '{0}' on the server {1}. Error: {2}";
+    private const string TEMPLATE_ASSEMBLY_DEPLOY_SUCCEED
+      = "[Client/Logic] Successfully deployed the assembly '{0}' on the server {1}.";
+    private const string TEMPLATE_TEST_RESULT
+      = "[Client/Logic] [Result]\n{0}\n";
+    private const string TEMPLATE_ERROR
+      = "[Client/Logic] An error occurred: {0}";
+    private const string TEMPLATE_CLIENT_WAIT
+      = "[Client/Logic] Sleep 1 sec.";
+    private const string TEMPLATE_ALLOC
+      = "[Client/Logic] Server: {0}, Allocated: {1}";
+    private const string TEMPLATE_FREE_CORE
+      = "[Client/Logic] Free core.";
+    private const string TEMPLATE_TESTS_NOT_COMPLETED
+      = "[Client/Logic] {0} tests not completed yet.";
     #endregion
+
+    private const string TEMPLATE_WORKER_LOCAL_NAME
+      = "{0}/{1}";
 
 
     public ClientLogic() {
@@ -48,31 +63,36 @@ namespace PCG3.Client.Logic {
         for (int i = 0; i < serverAddresses.Length; ++i) {
 
           string addr = serverAddresses[i];
-          string localName = addr + "/" + i;
+
+          // A local name is required per AssemblyWorker, because it is not allowed
+          // to create multiple instances of AssemblyWorker within one app space.
+          string localName = string.Format(TEMPLATE_WORKER_LOCAL_NAME, addr, i);
+          
           AssemblyWorker worker = space.ConnectWorker<AssemblyWorker>(addr, localName);
 
-          AssemblyRequest request = new AssemblyRequest();
-          request.Bytes = File.ReadAllBytes(assemblyPath);
-          request.ResponsePort = space.Receive<AssemblyResponse>(resp => {
+          AssemblyRequest request    = new AssemblyRequest();
+          request.AssemblyPath       = assemblyPath;
+          request.AssemblyByteStream = File.ReadAllBytes(assemblyPath);
+          request.ResponsePort       = space.Receive<AssemblyResponse>(resp => {
             
             string message = "";
             if (!resp.Worked) {
-              message = string.Format(ASSEMBLY_DEPLOY_FAILED_TEMPLATE,
-                                      DateUtil.GetCurrentDateTime(),
+              message = string.Format(TEMPLATE_ASSEMBLY_DEPLOY_FAILED,
                                       assemblyPath, addr, resp.ErrorMsg);
 
             } else {
-              message = string.Format(ASSEMBLY_DEPLOY_SUCCEED_TEMPLATE,
-                                      DateUtil.GetCurrentDateTime(),
+              message = string.Format(TEMPLATE_ASSEMBLY_DEPLOY_SUCCEED,
                                       assemblyPath, addr);
             }
-            Console.WriteLine(message);
+            Logger.Log(message);
             countdown.Signal();
           });
 
           worker.Post(request);
         }
 
+        // This method is left and the app space is closed
+        // after the assembly has been deployed on each server.
         countdown.Wait();
       };
 
@@ -84,20 +104,21 @@ namespace PCG3.Client.Logic {
     /// <summary>
     /// Distributes a list of tests to an array of servers.
     /// If a test was executed by a server and the result is returned,
-    /// the client's view model is notified by the given callback.
+    /// the client's view model is notified by the given OnTestCompleted callback.
     /// </summary>
     /// <param name="tests">tests to distribute</param>
     /// <param name="serverAddresses">array of server addresses in the form host:port</param>
-    public void SendTestsToServers(List<Test> availableTests, string[] serverAddresses,
-                                   OnTestCompleted callback) {
+    /// <param name="callback">callback called when a server returned a result of a test</param>
+    public void DistributeTestsToServers(List<Test> availableTests, string[] serverAddresses,
+                                         OnTestCompleted callback) {
 
       int serverCount = serverAddresses.Length;
       int testCount   = availableTests.Count;
       TestWorker[] testWorkers = new TestWorker[serverCount];
-      
-      // step 1 - set the status of each test to Waiting...
+
+      // step 1 - set the status of each test to "In Progress"
       foreach (Test test in availableTests) {
-        test.Status = TestStatus.WAITING;
+        test.Status = TestStatus.IN_PROGRESS;
         callback(test);
       }
       
@@ -107,7 +128,7 @@ namespace PCG3.Client.Logic {
         // step 2 - connect to each server and create a worker per server
         for (int i = 0; i < serverCount; ++i) {
           string addr = serverAddresses[i];
-          string localName = addr + "/" + i;
+          string localName = string.Format(TEMPLATE_WORKER_LOCAL_NAME, addr, i);
           testWorkers[i] = space.ConnectWorker<TestWorker>(addr, localName);
           testWorkers[i].ServerId = i;
           testWorkers[i].ServerAddress = addr;
@@ -123,7 +144,7 @@ namespace PCG3.Client.Logic {
 
         while (freeTestsCount > 0) {
 
-          Console.WriteLine("Client: Sleep 1 sec.");
+          Logger.Log(TEMPLATE_CLIENT_WAIT);
           Thread.Sleep(1000);
 
           foreach (TestWorker worker in testWorkers) {
@@ -140,7 +161,8 @@ namespace PCG3.Client.Logic {
               
               int cores = allocResp.AllocCores;
 
-              Console.WriteLine("Client: Server: " + allocReq.ServerAddress + ", Allocated: " + cores);
+              string message = string.Format(TEMPLATE_ALLOC, allocReq.ServerAddress, cores);
+              Logger.Log(message);
               freeTestsCount -= cores;
 
               allocCd.Signal();
@@ -159,25 +181,23 @@ namespace PCG3.Client.Logic {
 
                 #region run response
                 runReq.ResponsePort = space.Receive<RunTestsResponse>(runResp => {
-                  Console.WriteLine("Client: " + runResp.Result);
+                  message = string.Format(TEMPLATE_TEST_RESULT, runResp.Result);
+                  Logger.Log(message);
                   lock (lockObj) {
                     callback(runResp.Result);
                   }
                   
-                  CountdownEvent freeCd = new CountdownEvent(1);
                   FreeCoreRequest freeReq = new FreeCoreRequest();
-
                   #region free response
                   freeReq.ResponsePort = space.Receive<FreeCoreResponse>(freeResp => {
-                    Console.WriteLine("Client: Free core.");
+                    Logger.Log(TEMPLATE_FREE_CORE);
                     testsCd.Signal();
-                    Console.WriteLine("Client: " + testsCd.CurrentCount + " tests are not completed yet.");
+                    message = string.Format(TEMPLATE_TESTS_NOT_COMPLETED, testsCd.CurrentCount);
+                    Logger.Log(message);
                   });
                   #endregion free response
 
                   testWorkers[runReq.ServerId].Post(freeReq);
-                  Console.WriteLine("Client: Try to free core.");
-
                 });
                 #endregion run response
 
@@ -194,19 +214,22 @@ namespace PCG3.Client.Logic {
 
         } // while enough tests
 
-        testsCd.Wait();
+        testsCd.Wait(); // wait until all tests have been finished
       }
     }
 
 
     /// <summary>
-    /// 
+    /// Extracts and returns a list of methods of a given assembly, which
+    /// have an attribute [Test].
     /// </summary>
-    /// <param name="assemblyPath"></param>
-    /// <returns></returns>
+    /// <param name="assemblyPath">assembly to extract the tests from</param>
+    /// <returns>list of methods having an attribute [Test]</returns>
     public List<Test> GetTestMethodsOfAssembly(string assemblyPath) {
 
       List<Test> tests = new List<Test>();
+
+      // load assembly
       Assembly assembly = Assembly.LoadFrom(assemblyPath);
 
       foreach (Type type in assembly.GetTypes()) {
@@ -218,10 +241,10 @@ namespace PCG3.Client.Logic {
             = Utilities.FindAttribute<TestAttribute>(attributes);
 
           if (testAttribute != null) {
-            Test test = new Test();
+            Test test       = new Test();
             test.MethodName = method.Name;
-            test.Status = TestStatus.NONE;
-            test.Type = type;
+            test.Status     = TestStatus.NONE;
+            test.Type       = type;
             tests.Add(test);
           }
         }

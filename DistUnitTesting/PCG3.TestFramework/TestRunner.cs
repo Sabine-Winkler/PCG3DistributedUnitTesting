@@ -150,7 +150,7 @@ namespace PCG3.TestFramework {
 
             test.MethodName = method.Name;
             test.Type = type;
-            test.Status = TestStatus.WAITING;
+            test.Status = TestStatus.IN_PROGRESS;
 
             RunTest(test, testClass, expectedExceptionAttribute);
             tests.Add(test);
