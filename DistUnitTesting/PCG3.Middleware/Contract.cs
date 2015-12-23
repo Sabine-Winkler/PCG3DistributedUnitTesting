@@ -7,6 +7,10 @@ using XcoAppSpaces.Core;
 namespace PCG3.Middleware {
 
   #region AssemblyWorker
+
+  /// <summary>
+  /// Worker which deploys an assembly to a server.
+  /// </summary>
   public class AssemblyWorker : Port<AssemblyRequest> {
   }
 
@@ -28,6 +32,13 @@ namespace PCG3.Middleware {
 
 
   #region TestWorker
+
+  /// <summary>
+  /// Worker which distributes tests to servers and executes them by
+  ///  1. allocating cores
+  ///  2. running tests
+  ///  3. freeing a core
+  /// </summary>
   public class TestWorker : PortSet<RunTestsRequest,
                                     AllocCoresRequest, Subscribe<AllocCoresRequest>, Unsubscribe<AllocCoresRequest>,
                                     FreeCoreRequest,   Subscribe<FreeCoreRequest>,   Unsubscribe<FreeCoreRequest>> {
@@ -41,12 +52,17 @@ namespace PCG3.Middleware {
     public string ClientAddress { get; set; }
     public int ServerId { get; set; }
     public string ServerAddress { get; set; }
+
+    // number of tests which are currently available to be executed
     public int TestCount { get; set; }
+
     public Port<AllocCoresResponse> ResponsePort { get; set; }
   }
 
   [Serializable]
   public class AllocCoresResponse {
+
+    // number of cores which were allocated by a server
     public int AllocCores { get; set; }
   }
 

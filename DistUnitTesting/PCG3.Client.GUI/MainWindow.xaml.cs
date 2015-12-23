@@ -4,6 +4,9 @@ using System.Windows;
 
 namespace PCG3.Client.GUI {
 
+  /// <summary>
+  /// Main window of the client.
+  /// </summary>
   public partial class MainWindow : Window {
 
     public MainWindow() {

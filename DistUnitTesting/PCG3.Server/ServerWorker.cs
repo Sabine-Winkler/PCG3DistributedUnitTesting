@@ -10,7 +10,7 @@ namespace PCG3.Server {
 
 
   /// <summary>
-  /// Server worker for deploying and loading the assembly.
+  /// Implementation of an AssemblyWorker.
   /// </summary>
   public class ServerAssemblyWorker : AssemblyWorker {
 
@@ -19,7 +19,11 @@ namespace PCG3.Server {
       = "[Server/AssWo] [Me|{0}] [C|{1}] Assembly '{2}' got load on server.";
     #endregion
 
-    [XcoExclusive]
+    /// <summary>
+    /// Loads an assembly.
+    /// </summary>
+    /// <param name="req">assembly loading request containing the assembly as byte stream</param>
+    [XcoConcurrent]
     public void Process(AssemblyRequest req) {
 
       AssemblyResponse resp = new AssemblyResponse();
@@ -42,7 +46,7 @@ namespace PCG3.Server {
 
 
   /// <summary>
-  /// Server worker for running tests on a server.
+  /// Implementation of a TestWorker.
   /// </summary>
   public class ServerTestWorker : TestWorker {
 
@@ -65,14 +69,22 @@ namespace PCG3.Server {
     private readonly XcoPublisher<FreeCoreRequest> freeCorePublisher
       = new XcoPublisher<FreeCoreRequest>();
 
-    [XcoExclusive]
+    /// <summary>
+    /// Publishes the allocating cores request to subscribed clients.
+    /// </summary>
+    /// <param name="req">allocating cores request</param>
+    [XcoConcurrent]
     public void Process(AllocCoresRequest req) {
       Logger.Log(string.Format(TEMPLATE_AVAILABLE_TESTS,
                                req.ServerAddress, req.ClientAddress, req.TestCount));
       allocCoresPublisher.Publish(req);
     }
 
-    [XcoExclusive]
+    /// <summary>
+    /// Publishes the free core request to subscribed clients.
+    /// </summary>
+    /// <param name="req">free core request</param>
+    [XcoConcurrent]
     public void Process(FreeCoreRequest req) {
       Logger.Log(string.Format(TEMPLATE_FREE_CORE_REQUEST,
                                req.ServerAddress, req.ClientAddress));
@@ -80,7 +92,11 @@ namespace PCG3.Server {
     }
 
 
-    [XcoExclusive]
+    /// <summary>
+    /// Runs multiple tests in parallel and sends a response after a test finished.
+    /// </summary>
+    /// <param name="req">run tests request containing a list of tests to be executed</param>
+    [XcoConcurrent]
     public void Process(RunTestsRequest req) {
 
       Logger.Log(string.Format(TEMPLATE_RUN_TESTS,
@@ -91,6 +107,7 @@ namespace PCG3.Server {
         
         Task.Run(() => {
           RunTestsResponse resp = new RunTestsResponse();
+          test.ServerAddress = req.ServerAddress;
           Logger.Log(string.Format(TEMPLATE_RUN_TEST,
                                    req.ServerAddress, req.ClientAddress));
           resp.Result = testRunner.RunTest(test);

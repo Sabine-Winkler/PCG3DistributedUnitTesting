@@ -170,8 +170,8 @@ namespace PCG3.TestFramework {
 
       TestRunner runner = new TestRunner();
 
-      // TODO: remove the following path
-      string assemblyName = @"C:\SABINE\Master\3_WS_15_16\PCG3\Teil2-Scheller\UE-Dist-Unittesting\PCG3DistributedUnitTesting\DistUnitTesting\PCG3.TestUnitTests\bin\Debug\PCG3.TestUnitTests.dll";
+      // TODO: add a path here, if you want to test the TestRunner
+      string assemblyName = "";
       
       Assembly assembly = Assembly.LoadFrom(assemblyName);
       List<Test> tests = runner.RunTests(assembly);

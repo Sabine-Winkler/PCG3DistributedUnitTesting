@@ -228,6 +228,9 @@ namespace PCG3.Client.Logic {
             #endregion alloc response
 
             testWorkers[allocReq.ServerId].Post(allocReq);
+
+            // Try a new allocation after the last one has finished, otherwise
+            // an invalid number of available cores may occur at the server side.
             allocCd.Wait();
 
           } // foreach worker

@@ -6,8 +6,8 @@
     <Grid Margin="10">
 
       <Grid.RowDefinitions>
-        <RowDefinition Height="40*" />
-        <RowDefinition Height="55*" />
+        <RowDefinition Height="30*" />
+        <RowDefinition Height="65*" />
         <RowDefinition Height="5*"  />
       </Grid.RowDefinitions>
 
@@ -52,16 +52,38 @@
           <RowDefinition Height="1*"/>
           <RowDefinition Height="9*"/>
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Text="Tests:" />
+
+        <Grid Grid.Row="0" >
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="4*" />
+            <ColumnDefinition Width="4*" />
+          </Grid.ColumnDefinitions>
+
+          <StackPanel Grid.Column="0" Orientation="Horizontal">
+            <TextBlock Text="Tests: " />
+            <TextBlock Text="{Binding Path=NoOfTests}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal">
+            <TextBlock Text="Total Execution Time: " />
+            <TextBlock Text="{Binding Path=TotalExecutionTime}" />
+          </StackPanel>
+          <StackPanel Grid.Column="2" Orientation="Horizontal">
+            <TextBlock Text="Mean Execution Time: " />
+            <TextBlock Text="{Binding Path=MeanExecutionTime}" />
+          </StackPanel>
+        </Grid>
+        
         <DataGrid Grid.Row="1" ItemsSource="{Binding Path=TestColl}"
                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                   AutoGenerateColumns="False">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Class"       Width="15*" Binding="{Binding Path=Type.FullName, Mode=OneWay}"/>
-            <DataGridTextColumn Header="Method"      Width="15*" Binding="{Binding Path=MethodName, Mode=OneWay}" />
-            <DataGridTextColumn Header="Status"      Width="9*"  Binding="{Binding Path=Status, Mode=OneWay}" />
-            <DataGridTextColumn Header="ElapsedTime" Width="13*" Binding="{Binding Path=ElapsedTime, Mode=OneWay}" />
-            <DataGridTextColumn Header="Result"      Width="48*" Binding="{Binding Path=Message, Mode=OneWay}" />
+            <DataGridTextColumn Header="Class"       Width="13*" Binding="{Binding Path=Type.FullName, Mode=OneWay}" />
+            <DataGridTextColumn Header="Method"      Width="13*" Binding="{Binding Path=MethodName,    Mode=OneWay}" />
+            <DataGridTextColumn Header="Status"      Width="9*"  Binding="{Binding Path=Status,        Mode=OneWay}" />
+            <DataGridTextColumn Header="Server"      Width="12*" Binding="{Binding Path=ServerAddress, Mode=OneWay}" />
+            <DataGridTextColumn Header="ElapsedTime" Width="13*" Binding="{Binding Path=ElapsedTime,   Mode=OneWay}" />
+            <DataGridTextColumn Header="Result"      Width="40*" Binding="{Binding Path=Message,       Mode=OneWay}" />
           </DataGrid.Columns>
       </DataGrid>
     </Grid>

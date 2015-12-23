@@ -6,6 +6,9 @@ using XcoAppSpaces.Core;
 
 namespace PCG3.Server {
 
+  /// <summary>
+  /// Main program for the server.
+  /// </summary>
   public class Program {
 
     #region message templates

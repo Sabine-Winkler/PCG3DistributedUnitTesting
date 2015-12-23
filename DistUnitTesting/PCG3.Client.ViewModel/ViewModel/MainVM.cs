@@ -5,6 +5,7 @@ using PCG3.Util;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -27,6 +28,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
     private string serverAddresses;
     private bool validServerAddresses;
     private bool validAssemblyPath;
+    private TimeSpan totalExecutionTime;
+    private TimeSpan meanExecutionTime;
+    private int noOfTests;
 
     // to control if the 'Start' button is enabled/disabled
     private bool validServersAndAssembly;
@@ -64,6 +68,9 @@ namespace PCG3.Client.ViewModel.ViewModel {
           ValidAssemblyPath = (selectedAssemblyPath != null && selectedAssemblyPath != "");
           TestList = logic.GetTestMethodsOfAssembly(selectedAssemblyPath);
           TestColl = new ObservableCollection<Test>(TestList);
+          NoOfTests = TestList.Count;
+          TotalExecutionTime = new TimeSpan();
+          MeanExecutionTime  = new TimeSpan();
           RaisePropertyChangedEvent(vm => vm.selectedAssemblyPath);
         }
       }
@@ -159,6 +166,38 @@ namespace PCG3.Client.ViewModel.ViewModel {
       }
     }
 
+    public TimeSpan TotalExecutionTime {
+      get { return totalExecutionTime; }
+
+      set {
+        if (totalExecutionTime != value) {
+          totalExecutionTime = value;
+          RaisePropertyChangedEvent(vm => vm.totalExecutionTime);
+        }
+      }
+    }
+
+    public TimeSpan MeanExecutionTime {
+      get { return meanExecutionTime; }
+
+      set {
+        if (meanExecutionTime != value) {
+          meanExecutionTime = value;
+          RaisePropertyChangedEvent(vm => vm.meanExecutionTime);
+        }
+      }
+    }
+
+    public int NoOfTests {
+      get { return noOfTests; }
+
+      set {
+        if (noOfTests != value) {
+          noOfTests = value;
+          RaisePropertyChangedEvent(vm => vm.noOfTests);
+        }
+      }
+    }
 
     private ICommand selectAssemblyCommand;
     public ICommand SelectAssemblyCommand {
@@ -219,7 +258,14 @@ namespace PCG3.Client.ViewModel.ViewModel {
             TestsInProgress = true;
             UpdateStartButton();
 
+            TotalExecutionTime = new TimeSpan();
+            MeanExecutionTime  = new TimeSpan();
+            
+            Stopwatch watch = new Stopwatch();
+
             Task.Run(() => {
+
+              watch.Start();
 
               // step 1 - deploy assembly to the servers
               logic.DeployAssemblyToServers(SelectedAssemblyPath, ServerAddressesArray);
@@ -228,8 +274,12 @@ namespace PCG3.Client.ViewModel.ViewModel {
               logic.DistributeTestsToServers(TestList, ServerAddressesArray, OnTestCompleted);
 
               Logger.Log(TEMPLATE_DISTRIBUTED_TESTS);
+              watch.Stop();
 
             }).ContinueWith((t) => {
+
+              TotalExecutionTime = watch.Elapsed;
+              MeanExecutionTime = new TimeSpan(watch.Elapsed.Ticks / NoOfTests);
 
               // enable 'Start' button, if possible
               TestsInProgress = false;
