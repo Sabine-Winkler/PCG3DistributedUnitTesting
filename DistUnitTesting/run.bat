@@ -1,7 +1,7 @@
 @echo off
 
-rem set "COMPILE_MODE=release" 
-set "COMPILE_MODE=debug"
+set "COMPILE_MODE=release" 
+rem set "COMPILE_MODE=debug"
 
 set "PROGRAM_CLIENT=.\PCG3.Client.GUI\bin\%COMPILE_MODE%\PCG3.Client.GUI.exe"
 set "PROGRAM_SERVER=.\PCG3.Server\bin\%COMPILE_MODE%\PCG3.Server.exe"
