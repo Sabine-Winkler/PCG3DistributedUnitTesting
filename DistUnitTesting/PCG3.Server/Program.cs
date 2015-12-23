@@ -10,13 +10,13 @@ namespace PCG3.Server {
 
     #region message templates
     private const string TEMPLATE_RUNNING
-      = "[Server/Progr] Running {0} on {1}.";
+      = "[S/Progr] [Me|{0}] Running {1} on {2}.";
     private const string TEMPLATE_NO_CORES
-      = "[Server/Progr] Using {0} cores.";
+      = "[S/Progr] [Me|{0}] Using {1} cores.";
     private const string TEMPLATE_FREE_CORE
-      = "[Server/Progr] Free core.";
+      = "[S/Progr] [Me|{0}] [C|{1}] Free core.";
     private const string TEMPLATE_ALLOC
-      = "[Server/Progr] Client - Requested: {0}, Allocated: {1}, Free: {2}";
+      = "[S/Progr] [Me|{0}] [C|{1}] Requested: {2}, Allocated: {3}, Free: {4}";
     #endregion
 
     private const int DEFAULT_CORES = 4;
@@ -52,16 +52,21 @@ namespace PCG3.Server {
 
       using (var space = new XcoAppSpace(string.Format("tcp.port={0}", port))) {
         
-        message = string.Format(TEMPLATE_NO_CORES, cores);
+        string serverAddress = space.Address;
+
+        message = string.Format(TEMPLATE_NO_CORES, serverAddress, cores);
         Logger.Log(message);
 
         // create workers to be run within the application space
         TestWorker worker = space.RunWorker<TestWorker, ServerTestWorker>();
         space.RunWorker<AssemblyWorker, ServerAssemblyWorker>();
         
-        Logger.Log(string.Format(TEMPLATE_RUNNING, "TestWorker", port));
-        Logger.Log(string.Format(TEMPLATE_RUNNING, "AssemblyWorker", port));
+        Logger.Log(string.Format(TEMPLATE_RUNNING, serverAddress, "TestWorker", port));
+        Logger.Log(string.Format(TEMPLATE_RUNNING, serverAddress, "AssemblyWorker", port));
 
+
+        Object logLockObj   = new Object();
+        Object coresLockObj = new Object();
 
         // allocate cores subscription
         Port<AllocCoresRequest> allocSubscription
@@ -69,15 +74,19 @@ namespace PCG3.Server {
               
               AllocCoresResponse resp = new AllocCoresResponse();
 
-              if (req.TestCount >= cores) {
-                resp.AllocCores = cores;
-              } else {
-                resp.AllocCores = req.TestCount;
-              }
-              cores = cores - resp.AllocCores;
+              lock (coresLockObj) {
+                if (req.TestCount >= cores) {
+                  resp.AllocCores = cores;
+                } else {
+                  resp.AllocCores = req.TestCount;
+                }
+                cores = cores - resp.AllocCores;
 
-              message = string.Format(TEMPLATE_ALLOC, req.TestCount, resp.AllocCores, cores);
-              Logger.Log(message);
+                message = string.Format(TEMPLATE_ALLOC,
+                                        serverAddress, req.ClientAddress,
+                                        req.TestCount, resp.AllocCores, cores);
+              }
+              lock(logLockObj) { Logger.Log(message); }
 
               req.ResponsePort.Post(resp);
             });
@@ -89,14 +98,20 @@ namespace PCG3.Server {
         Port<FreeCoreRequest> freeSubscription
           = space.Receive<FreeCoreRequest>(req => {
 
-              Logger.Log(TEMPLATE_FREE_CORE);
+              message = string.Format(TEMPLATE_FREE_CORE,
+                                      serverAddress, req.ClientAddress);
 
-              cores++;
+              lock (logLockObj) { Logger.Log(message); }
+
+              lock (coresLockObj) {
+                cores++;
+              }
 
               req.ResponsePort.Post(new FreeCoreResponse());
           });
 
         worker.Post(new Subscribe<FreeCoreRequest>(freeSubscription));
+
 
         // wait until the user terminates the server pressing a key
         Console.ReadLine();

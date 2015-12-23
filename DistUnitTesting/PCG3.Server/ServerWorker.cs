@@ -16,7 +16,7 @@ namespace PCG3.Server {
 
     #region message templates
     private const string TEMPLATE_LOAD_ASSEMBLY
-      = "[Server/AssWo] Assembly '{0}' got load on server.";
+      = "[Server/AssWo] [Me|{0}] [C|{1}] Assembly '{2}' got load on server.";
     #endregion
 
     [XcoExclusive]
@@ -27,7 +27,10 @@ namespace PCG3.Server {
       try {
         Assembly.Load(req.AssemblyByteStream);
         resp.Worked = true;
-        Logger.Log(string.Format(TEMPLATE_LOAD_ASSEMBLY, req.AssemblyPath));
+        string message = string.Format(TEMPLATE_LOAD_ASSEMBLY,
+                                       req.ServerAddress, req.ClientAddress,
+                                       req.AssemblyPath);
+        Logger.Log(message);
       } catch (Exception e) {
         resp.Worked = false;
         resp.ErrorMsg = e.ToString();
@@ -45,15 +48,15 @@ namespace PCG3.Server {
 
     #region message templates
     private const string TEMPLATE_TEST_RESULT
-      = "[Server/TstWo] [Result]\n{0}\n";
+      = "[S/TstWo] [Me|{0}] [C|{1}] [Result]\n{2}\n";
     private const string TEMPLATE_AVAILABLE_TESTS
-      = "[Server/TstWo] {0} tests available.";
+      = "[S/TstWo] [Me|{0}] [C|{1}] {2} tests available.";
     private const string TEMPLATE_FREE_CORE_REQUEST
-      = "[Server/TstWo] Free core request.";
+      = "[S/TstWo] [Me|{0}] [C|{1}] Free core request.";
     private const string TEMPLATE_RUN_TESTS
-      = "[Server/TstWo] Run tests.";
+      = "[S/TstWo] [Me|{0}] [C|{1}] Run tests.";
     private const string TEMPLATE_RUN_TEST
-      = "[Server/TstWo] Run test ...";
+      = "[S/TstWo] [Me|{0}] [C|{1}] Run test ...";
     #endregion
 
     // XcoPublisher automatically manages incoming subscriptions
@@ -64,13 +67,15 @@ namespace PCG3.Server {
 
     [XcoExclusive]
     public void Process(AllocCoresRequest req) {
-      Logger.Log(string.Format(TEMPLATE_AVAILABLE_TESTS, req.TestCount));
+      Logger.Log(string.Format(TEMPLATE_AVAILABLE_TESTS,
+                               req.ServerAddress, req.ClientAddress, req.TestCount));
       allocCoresPublisher.Publish(req);
     }
 
     [XcoExclusive]
     public void Process(FreeCoreRequest req) {
-      Logger.Log(TEMPLATE_FREE_CORE_REQUEST);
+      Logger.Log(string.Format(TEMPLATE_FREE_CORE_REQUEST,
+                               req.ServerAddress, req.ClientAddress));
       freeCorePublisher.Publish(req);
     }
 
@@ -78,16 +83,19 @@ namespace PCG3.Server {
     [XcoExclusive]
     public void Process(RunTestsRequest req) {
 
-      Logger.Log(TEMPLATE_RUN_TESTS);
+      Logger.Log(string.Format(TEMPLATE_RUN_TESTS,
+                               req.ServerAddress, req.ClientAddress));
       TestRunner testRunner = new TestRunner();
 
       foreach (Test test in req.Tests) {
         
         Task.Run(() => {
           RunTestsResponse resp = new RunTestsResponse();
-          Logger.Log(TEMPLATE_RUN_TEST);
+          Logger.Log(string.Format(TEMPLATE_RUN_TEST,
+                                   req.ServerAddress, req.ClientAddress));
           resp.Result = testRunner.RunTest(test);
-          Logger.Log(string.Format(TEMPLATE_TEST_RESULT, resp.Result));
+          Logger.Log(string.Format(TEMPLATE_TEST_RESULT,
+                                   req.ServerAddress, req.ClientAddress, resp.Result));
           req.ResponsePort.Post(resp);
         });
       }

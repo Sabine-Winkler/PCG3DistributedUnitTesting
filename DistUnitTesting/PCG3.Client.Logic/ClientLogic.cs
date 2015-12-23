@@ -13,7 +13,7 @@ namespace PCG3.Client.Logic {
   /// <summary>
   /// Logic of the clients.
   /// Extracts tests from an assembly, deploys the assembly to the servers,
-  /// and distributes the tests to the servers using a three step approach
+  /// and distributes the tests to the servers using a three staged approach
   /// (allocate, run, free) and a publish-subscribe mechanism.
   /// </summary>
   public class ClientLogic {
@@ -22,21 +22,19 @@ namespace PCG3.Client.Logic {
  
     #region message templates
     private const string TEMPLATE_ASSEMBLY_DEPLOY_FAILED
-      = "[Client/Logic] Failed to deploy the assembly '{0}' on the server {1}. Error: {2}";
+      = "[C/Logic] [Me|{0}] Failed to deploy the assembly '{1}' on the server {2}. Error: {3}";
     private const string TEMPLATE_ASSEMBLY_DEPLOY_SUCCEED
-      = "[Client/Logic] Successfully deployed the assembly '{0}' on the server {1}.";
+      = "[C/Logic] [Me|{0}] Successfully deployed the assembly '{1}' on the server {2}.";
     private const string TEMPLATE_TEST_RESULT
-      = "[Client/Logic] [Result]\n{0}\n";
-    private const string TEMPLATE_ERROR
-      = "[Client/Logic] An error occurred: {0}";
+      = "[C/Logic] [Me|{0}] [Result]\n{1}\n";
     private const string TEMPLATE_CLIENT_WAIT
-      = "[Client/Logic] Sleep 1 sec.";
+      = "[C/Logic] [Me|{0}] Sleep 1 sec.";
     private const string TEMPLATE_ALLOC
-      = "[Client/Logic] Server: {0}, Allocated: {1}";
+      = "[C/Logic] [Me|{0}] Server: {1}, Allocated: {2}";
     private const string TEMPLATE_FREE_CORE
-      = "[Client/Logic] Free core.";
+      = "[C/Logic] [Me|{0}] Free core.";
     private const string TEMPLATE_TESTS_NOT_COMPLETED
-      = "[Client/Logic] {0} tests not completed yet.";
+      = "[C/Logic] [Me|{0}] {1} tests not completed yet.";
     #endregion
 
     private const string TEMPLATE_WORKER_LOCAL_NAME
@@ -57,6 +55,9 @@ namespace PCG3.Client.Logic {
     public void DeployAssemblyToServers(string assemblyPath, string[] serverAddresses) {
 
       using (var space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
+        
+        string clientAddress = space.Address;
+        Object logLockObj = new Object();
 
         CountdownEvent countdown = new CountdownEvent(serverAddresses.Length);
 
@@ -70,25 +71,29 @@ namespace PCG3.Client.Logic {
           
           AssemblyWorker worker = space.ConnectWorker<AssemblyWorker>(addr, localName);
 
-          AssemblyRequest request    = new AssemblyRequest();
-          request.AssemblyPath       = assemblyPath;
-          request.AssemblyByteStream = File.ReadAllBytes(assemblyPath);
-          request.ResponsePort       = space.Receive<AssemblyResponse>(resp => {
+          AssemblyRequest req    = new AssemblyRequest();
+          req.ServerAddress      = addr;
+          req.ClientAddress      = clientAddress;
+          req.AssemblyPath       = assemblyPath;
+          req.AssemblyByteStream = File.ReadAllBytes(assemblyPath);
+          req.ResponsePort       = space.Receive<AssemblyResponse>(resp => {
             
             string message = "";
             if (!resp.Worked) {
               message = string.Format(TEMPLATE_ASSEMBLY_DEPLOY_FAILED,
-                                      assemblyPath, addr, resp.ErrorMsg);
+                                      clientAddress, assemblyPath, addr, resp.ErrorMsg);
 
             } else {
               message = string.Format(TEMPLATE_ASSEMBLY_DEPLOY_SUCCEED,
-                                      assemblyPath, addr);
+                                      clientAddress, assemblyPath, addr);
             }
-            Logger.Log(message);
+
+            lock(logLockObj) { Logger.Log(message); }
+
             countdown.Signal();
           });
 
-          worker.Post(request);
+          worker.Post(req);
         }
 
         // This method is left and the app space is closed
@@ -124,6 +129,7 @@ namespace PCG3.Client.Logic {
       
       using (XcoAppSpace space = new XcoAppSpace(APP_SPACE_CONFIG_STRING)) {
         
+        string clientAddress = space.Address;
 
         // step 2 - connect to each server and create a worker per server
         for (int i = 0; i < serverCount; ++i) {
@@ -136,22 +142,27 @@ namespace PCG3.Client.Logic {
         }
 
         CountdownEvent testsCd = new CountdownEvent(testCount);
-        Object lockObj = new Object();
-
+        Object onTestCompletedLockObj = new Object();
+        Object logLockObj             = new Object();
+        
         // step 3 - distribute tests to the servers
         int freeTestsCount = testCount;
         int testNo = 0;
 
         while (freeTestsCount > 0) {
 
-          Logger.Log(TEMPLATE_CLIENT_WAIT);
+          string message = string.Format(TEMPLATE_CLIENT_WAIT, clientAddress);
+          lock (logLockObj) { Logger.Log(message); }
+          
           Thread.Sleep(1000);
 
           foreach (TestWorker worker in testWorkers) {
 
             CountdownEvent allocCd = new CountdownEvent(1);
-               
+            
+            // stage 1 - allocate cores
             AllocCoresRequest allocReq = new AllocCoresRequest();
+            allocReq.ClientAddress = clientAddress;
             allocReq.ServerId      = worker.ServerId;
             allocReq.ServerAddress = worker.ServerAddress;
             allocReq.TestCount     = freeTestsCount;
@@ -161,8 +172,9 @@ namespace PCG3.Client.Logic {
               
               int cores = allocResp.AllocCores;
 
-              string message = string.Format(TEMPLATE_ALLOC, allocReq.ServerAddress, cores);
-              Logger.Log(message);
+              message = string.Format(TEMPLATE_ALLOC,
+                                      clientAddress, allocReq.ServerAddress, cores);
+              lock (logLockObj) { Logger.Log(message); }
               freeTestsCount -= cores;
 
               allocCd.Signal();
@@ -174,26 +186,34 @@ namespace PCG3.Client.Logic {
                   testNo++;
                 }
 
+                // stage 2 - send tests to servers and run them
                 RunTestsRequest runReq = new RunTestsRequest();
-                runReq.ServerId = allocReq.ServerId;
-                runReq.ServerAddress = allocReq.ServerAddress;
-                runReq.Tests = assignedTests;
+                runReq.ClientAddress   = clientAddress;
+                runReq.ServerId        = allocReq.ServerId;
+                runReq.ServerAddress   = allocReq.ServerAddress;
+                runReq.Tests           = assignedTests;
 
                 #region run response
                 runReq.ResponsePort = space.Receive<RunTestsResponse>(runResp => {
-                  message = string.Format(TEMPLATE_TEST_RESULT, runResp.Result);
-                  Logger.Log(message);
-                  lock (lockObj) {
+                  message = string.Format(TEMPLATE_TEST_RESULT, clientAddress, runResp.Result);
+                  lock (logLockObj) { Logger.Log(message); }
+                  lock (onTestCompletedLockObj) {
+                    // update client's view model
                     callback(runResp.Result);
                   }
                   
+                  // stage 3 - free a core
                   FreeCoreRequest freeReq = new FreeCoreRequest();
+                  freeReq.ServerAddress = runReq.ServerAddress;
+                  freeReq.ClientAddress = clientAddress;
                   #region free response
                   freeReq.ResponsePort = space.Receive<FreeCoreResponse>(freeResp => {
-                    Logger.Log(TEMPLATE_FREE_CORE);
+                    message = string.Format(TEMPLATE_FREE_CORE, clientAddress);
+                    lock (logLockObj) { Logger.Log(message); }
+                    message = string.Format(TEMPLATE_TESTS_NOT_COMPLETED,
+                                            clientAddress, testsCd.CurrentCount);
+                    lock (logLockObj) { Logger.Log(message); }
                     testsCd.Signal();
-                    message = string.Format(TEMPLATE_TESTS_NOT_COMPLETED, testsCd.CurrentCount);
-                    Logger.Log(message);
                   });
                   #endregion free response
 

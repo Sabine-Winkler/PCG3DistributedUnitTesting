@@ -11,7 +11,9 @@ namespace PCG3.Middleware {
   }
 
   [Serializable]
-  public class AssemblyRequest{
+  public class AssemblyRequest {
+    public string ServerAddress { get; set; }
+    public string ClientAddress { get; set; }
     public string AssemblyPath { get; set; }
     public byte[] AssemblyByteStream { get; set; }
     public Port<AssemblyResponse> ResponsePort { get; set; }
@@ -36,6 +38,7 @@ namespace PCG3.Middleware {
 
   [Serializable]
   public class AllocCoresRequest {
+    public string ClientAddress { get; set; }
     public int ServerId { get; set; }
     public string ServerAddress { get; set; }
     public int TestCount { get; set; }
@@ -49,6 +52,7 @@ namespace PCG3.Middleware {
 
   [Serializable]
   public class FreeCoreRequest {
+    public string ClientAddress { get; set; }
     public int ServerId { get; set; }
     public string ServerAddress { get; set; }
     public Port<FreeCoreResponse> ResponsePort { get; set; }
@@ -60,6 +64,7 @@ namespace PCG3.Middleware {
 
   [Serializable]
   public class RunTestsRequest {
+    public string ClientAddress { get; set; }
     public int ServerId { get; set; }
     public string ServerAddress { get; set; }
     public List<Test> Tests { get; set; }

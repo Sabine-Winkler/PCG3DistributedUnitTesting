@@ -19,8 +19,8 @@ namespace PCG3.Client.ViewModel.ViewModel {
   public class MainVM : ViewModelBase<MainVM> {
 
     #region message templates
-    private const string TEMPLATE_DISTRIBUTED_TESTS = "[Client/MaiVM] Distributed tests to servers.";
-    private const string TEMPLATE_UPDATED_TEST      = "[Client/MaiVM] Updated test {0}";
+    private const string TEMPLATE_DISTRIBUTED_TESTS = "[C/MaiVM] Distributed tests to servers.";
+    private const string TEMPLATE_UPDATED_TEST      = "[C/MaiVM] Updated test {0}";
     #endregion
 
     private string selectedAssemblyPath;
