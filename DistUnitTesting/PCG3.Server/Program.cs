@@ -44,9 +44,10 @@ namespace PCG3.Server {
       }
       #endregion
 
-      Console.WriteLine("==========================================================");
-      Console.WriteLine("  Xco Application Space - Distributed Unittesting Server  ");
-      Console.WriteLine("==========================================================");
+      Console.WriteLine("======================================");
+      Console.WriteLine("  SERVER for Distributed Unittesting  ");
+      Console.WriteLine("     using Xco Application Space      ");
+      Console.WriteLine("======================================");
 
       string message;
 

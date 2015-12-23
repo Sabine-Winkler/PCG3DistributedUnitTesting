@@ -7,7 +7,12 @@ namespace PCG3.Client.GUI {
   public partial class MainWindow : Window {
 
     public MainWindow() {
-      
+
+      Console.WriteLine("======================================");
+      Console.WriteLine("  CLIENT for Distributed Unittesting  ");
+      Console.WriteLine("     using Xco Application Space      ");
+      Console.WriteLine("======================================");
+
       InitializeComponent();
       
       #region check program arguments
