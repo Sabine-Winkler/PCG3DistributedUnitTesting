@@ -59,9 +59,9 @@
           <DataGrid.Columns>
             <DataGridTextColumn Header="Class"       Width="15*" Binding="{Binding Path=Type.FullName, Mode=OneWay}"/>
             <DataGridTextColumn Header="Method"      Width="15*" Binding="{Binding Path=MethodName, Mode=OneWay}" />
-            <DataGridTextColumn Header="Status"      Width="8*"  Binding="{Binding Path=Status, Mode=OneWay}" />
+            <DataGridTextColumn Header="Status"      Width="9*"  Binding="{Binding Path=Status, Mode=OneWay}" />
             <DataGridTextColumn Header="ElapsedTime" Width="13*" Binding="{Binding Path=ElapsedTime, Mode=OneWay}" />
-            <DataGridTextColumn Header="Result"      Width="49*" Binding="{Binding Path=Message, Mode=OneWay}" />
+            <DataGridTextColumn Header="Result"      Width="48*" Binding="{Binding Path=Message, Mode=OneWay}" />
           </DataGrid.Columns>
       </DataGrid>
     </Grid>
