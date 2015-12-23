@@ -4,7 +4,7 @@ rem set "COMPILE_MODE=release"
 set "COMPILE_MODE=debug"
 
 set "PROGRAM_CLIENT=.\PCG3.Client.GUI\bin\%COMPILE_MODE%\PCG3.Client.GUI.exe"
-set "PROGRAM_SERVER=.\PCG3.Server.Console\bin\%COMPILE_MODE%\PCG3.Server.exe"
+set "PROGRAM_SERVER=.\PCG3.Server\bin\%COMPILE_MODE%\PCG3.Server.exe"
 set "ASSEMBLY=.\PCG3.TestUnitTests\bin\%COMPILE_MODE%\PCG3.TestUnitTests.dll"
 rem === server1
 set "SERVER1_PORT=9000"

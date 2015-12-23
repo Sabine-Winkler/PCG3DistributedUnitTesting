@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.Client.GUI", "PCG3.Cli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.Client.ViewModel", "PCG3.Client.ViewModel\PCG3.Client.ViewModel.csproj", "{CAC03412-9666-457B-A44D-B6BE64D7EA9C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.Server", "PCG3.Server.Console\PCG3.Server.csproj", "{8181ED81-96A9-4111-BA68-1ECF5DA70E04}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.Server", "PCG3.Server\PCG3.Server.csproj", "{8181ED81-96A9-4111-BA68-1ECF5DA70E04}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG3.VisualStudioUnitTests", "PCG3.VisualStudioUnitTests\PCG3.VisualStudioUnitTests.csproj", "{8F85071D-FE75-4861-95DC-C7FAFDCD73DE}"
 EndProject
