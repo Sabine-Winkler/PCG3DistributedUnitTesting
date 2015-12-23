@@ -59,7 +59,7 @@ namespace PCG3.TestUnitTests {
     [Test]
     [ExpectedException(typeof(DivideByZeroException))]
     public void NoExceptionThrownTest() {
-      int result = 10 / 5;
+      // int result = 10 / 5;
     }
 
     /// <summary>
